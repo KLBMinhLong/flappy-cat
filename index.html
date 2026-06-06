@@ -798,14 +798,14 @@ gte80:[
 ]
 };
 function getRoastMessage(sc){
-  let pool;
-  if(sc<10)pool=MSGS.lt10;
-  else if(sc<20)pool=MSGS.lt20;
-  else if(sc<40)pool=MSGS.lt40;
-  else if(sc<60)pool=MSGS.lt60;
-  else if(sc<80)pool=MSGS.lt80;
-  else pool=MSGS.gte80;
-  return pool[Math.floor(Math.random()*pool.length)];
+  let pool,cat,cls;
+  if(sc<10){pool=MSGS.lt10;cat='😿';cls='trash';}
+  else if(sc<20){pool=MSGS.lt20;cat='😼';cls='tease';}
+  else if(sc<40){pool=MSGS.lt40;cat='🐱';cls='mid';}
+  else if(sc<60){pool=MSGS.lt60;cat='😸';cls='good';}
+  else if(sc<80){pool=MSGS.lt80;cat='😻';cls='pro';}
+  else{pool=MSGS.gte80;cat='🤯';cls='legend';}
+  return{msg:pool[Math.floor(Math.random()*pool.length)],cat,cls};
 }
 
 // ==================== GAME HISTORY ====================
@@ -839,8 +839,8 @@ function renderHistory(){
 
 function gameOver(){
   state='over';stopMusic();playSound('die');
-  const roastMsg=getRoastMessage(score);
-  addToHistory(score,MODES[currentMode].name,roastMsg);
+  const roast=getRoastMessage(score);
+  addToHistory(score,MODES[currentMode].name,roast.msg);
 
   spawnP(cat.x,cat.y,'#ff69b4',25);
   // update stats
@@ -875,7 +875,7 @@ function gameOver(){
   },300);
   // update UI
   document.getElementById('finalScore').textContent=score;
-  document.getElementById('roastMsg').textContent='"'+roastMsg+'"';
+  document.getElementById('roastMsg').innerHTML=`<span class="roast-cat">${roast.cat}</span><span class="roast-text ${roast.cls}">"${roast.msg}"</span>`;
   document.getElementById('statBest').textContent=stats.bestScore;
   document.getElementById('statPipes').textContent=pipesCleared;
   document.getElementById('statPowerups').textContent=powerupsCollected;

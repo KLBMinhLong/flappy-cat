@@ -697,15 +697,54 @@ canvas {
 
 /* ==================== ROAST MESSAGE ==================== */
 .roast-msg {
-  color: rgba(255,255,255,0.7);
-  font-size: 13px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
   font-style: italic;
   text-align: center;
   margin-bottom: 15px;
-  padding: 0 20px;
-  line-height: 1.4;
-  max-width: 280px;
+  padding: 14px 18px;
+  line-height: 1.5;
+  max-width: 320px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.15);
+  backdrop-filter: blur(8px);
+  text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: roastPop 0.4s ease;
 }
+
+@keyframes roastPop {
+  0% { transform: scale(0.8); opacity: 0; }
+  60% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.roast-cat {
+  font-size: 40px;
+  flex-shrink: 0;
+  animation: roastCatBounce 1s ease-in-out infinite;
+}
+
+@keyframes roastCatBounce {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-5px) rotate(5deg); }
+}
+
+.roast-text {
+  text-align: left;
+  flex: 1;
+}
+
+.roast-text.trash { color: #ff6b6b; }
+.roast-text.tease { color: #ffa94d; }
+.roast-text.mid   { color: #ffd43b; }
+.roast-text.good  { color: #69db7c; }
+.roast-text.pro   { color: #4dabf7; }
+.roast-text.legend { color: #cc5de8; }
 
 /* ==================== HISTORY SCREEN ==================== */
 #historyScreen {
