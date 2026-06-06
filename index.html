@@ -1628,11 +1628,11 @@ canvas {
     </div>
     <div class="settings-list">
       <div class="setting-item">
-        <span>🔊 <span class="lang-text" data-lang="sound">Âm thanh</span></span>
+        <span>🔊 <span class="lang-text" data-lang="sound_label">Âm thanh</span></span>
         <label class="toggle"><input type="checkbox" id="sfxToggle" checked><span class="slider"></span></label>
       </div>
       <div class="setting-item">
-        <span>🎵 <span class="lang-text" data-lang="music">Nhạc nền</span></span>
+        <span>🎵 <span class="lang-text" data-lang="music_label">Nhạc nền</span></span>
         <label class="toggle"><input type="checkbox" id="musicToggle" checked><span class="slider"></span></label>
       </div>
       <div class="setting-item">
@@ -1640,7 +1640,7 @@ canvas {
         <input type="range" id="volumeSlider" min="0" max="100" value="70" class="range-slider">
       </div>
       <div class="setting-item">
-        <span>📳 <span class="lang-text" data-lang="vibrate">Rung</span></span>
+        <span>📳 <span class="lang-text" data-lang="vibrate_label">Rung</span></span>
         <label class="toggle"><input type="checkbox" id="vibrateToggle" checked><span class="slider"></span></label>
       </div>
 
@@ -1684,7 +1684,7 @@ canvas {
   <div id="leaderboardScreen" class="screen hidden">
     <div class="screen-header">
       <button class="btn-back" id="btnLeaderboardBack">←</button>
-      <h2>🏆 Bảng xếp hạng</h2>
+      <h2>🏆 <span class="lang-text" data-lang="lb_title">Bảng xếp hạng</span></h2>
     </div>
     <div class="lb-tabs">
       <button class="lb-tab active" data-tab="all">Tất cả</button>
@@ -1747,7 +1747,7 @@ canvas {
   <div id="profileScreen" class="screen hidden">
     <div class="screen-header">
       <button class="btn-back" id="btnProfileBack">←</button>
-      <h2>👤 Hồ sơ</h2>
+      <h2>👤 <span class="lang-text" data-lang="profile_title">Hồ sơ</span></h2>
     </div>
     <div class="profile-content">
       <div class="profile-avatar">🐱</div>
@@ -1771,7 +1771,7 @@ canvas {
   <div id="historyScreen" class="screen hidden">
     <div class="screen-header">
       <button class="btn-back" id="btnHistoryBack">←</button>
-      <h2>📜 Lịch sử</h2>
+      <h2>📜 <span class="lang-text" data-lang="history_title">Lịch sử</span></h2>
     </div>
     <div class="history-list" id="historyList"></div>
   </div>
@@ -1853,6 +1853,24 @@ const LANG = {
     toast_levelup: 'Level Up!',
     toast_reached: 'Đạt',
     lang_label: '🇻🇳 Tiếng Việt',
+    pipes: 'Ống', powerups: 'Power-up', coins_label: 'Coin', combo_label: 'Combo',
+    games_played: 'Lần chơi', claim: 'Nhận', claimed: 'Đã nhận',
+    unlock_success: 'Mở khóa thành công!', levelup: 'Level Up!',
+    reached: 'Đạt', to_unlock: 'để mở', not_unlocked: 'Chưa mở khóa',
+    owned: 'Đã sở hữu', buy: 'Mua', coin: 'coin',
+    mode_classic: 'Classic', mode_hard: 'Hard Mode', mode_speed: 'Speed Run',
+    mode_tiny: 'Tiny Cat', mode_night: 'Night Mode',
+    default_tag: 'Mặc định', selected_tag: '✓ Đang chọn', select_tag: 'Chọn',
+    mission_reward: 'Phần thưởng', mission_progress: 'Tiến trình',
+    daily_missions: 'Nhiệm vụ hàng ngày', no_missions: 'Không có nhiệm vụ',
+    history_title: 'Lịch sử', no_history: 'Chưa có lịch sử',
+    lb_title: 'Bảng xếp hạng', lb_all: 'Tất cả', lb_daily: 'Hôm nay',
+    profile_title: 'Hồ sơ', level_label: 'Cấp độ',
+    settings_title: 'Cài đặt', sound_label: 'Âm thanh', music_label: 'Nhạc nền',
+    volume_label: 'Âm lượng', vibrate_label: 'Rung',
+    skins_title: 'Skins', achievements_title: 'Thành tích',
+    modes_title: 'Chế độ chơi', missions_title: 'Nhiệm vụ',
+    highscore: 'Điểm cao', total_games: 'Tổng số chơi', total_pipes: 'Tổng ống',
   },
   en: {
     play: '🎮 Play',
@@ -1918,6 +1936,24 @@ const LANG = {
     toast_levelup: 'Level Up!',
     toast_reached: 'Reached',
     lang_label: '🇬🇧 English',
+    pipes: 'Pipes', powerups: 'Power-ups', coins_label: 'Coins', combo_label: 'Combo',
+    games_played: 'Games Played', claim: 'Claim', claimed: 'Claimed',
+    unlock_success: 'Unlocked!', levelup: 'Level Up!',
+    reached: 'Reached', to_unlock: 'to unlock', not_unlocked: 'Not unlocked yet',
+    owned: 'Owned', buy: 'Buy', coin: 'coins',
+    mode_classic: 'Classic', mode_hard: 'Hard Mode', mode_speed: 'Speed Run',
+    mode_tiny: 'Tiny Cat', mode_night: 'Night Mode',
+    default_tag: 'Default', selected_tag: '✓ Selected', select_tag: 'Select',
+    mission_reward: 'Reward', mission_progress: 'Progress',
+    daily_missions: 'Daily Missions', no_missions: 'No missions available',
+    history_title: 'History', no_history: 'No history yet',
+    lb_title: 'Leaderboard', lb_all: 'All', lb_daily: 'Today',
+    profile_title: 'Profile', level_label: 'Level',
+    settings_title: 'Settings', sound_label: 'Sound', music_label: 'Music',
+    volume_label: 'Volume', vibrate_label: 'Vibrate',
+    skins_title: 'Skins', achievements_title: 'Achievements',
+    modes_title: 'Game Modes', missions_title: 'Missions',
+    highscore: 'High Score', total_games: 'Total Games', total_pipes: 'Total Pipes',
   }
 };
 function t(key) { return LANG[currentLang][key] || LANG['vi'][key] || key; }
@@ -1928,34 +1964,45 @@ function setLang(lang) {
 }
 function updateAllText() {
   const el = (id) => document.getElementById(id);
-  // Menu buttons
   const btnMap = {
     'btnPlay': 'play', 'btnHistory': 'history', 'btnSkins': 'skins',
     'btnLeaderboard': 'leaderboard', 'btnSettings': 'settings',
     'btnAchievements': 'achievements', 'btnRestart': 'restart',
     'btnShare': 'share', 'btnBackToMenu': 'menu'
   };
-  Object.entries(btnMap).forEach(([id, key]) => {
-    const e = el(id);
-    if (e) e.textContent = t(key);
-  });
-  // Menu text
+  Object.entries(btnMap).forEach(([id, key]) => { const e = el(id); if (e) e.textContent = t(key); });
   if (el('menuHighscore')) el('menuHighscore').textContent = t('best') + ' ' + (window.stats ? stats.bestScore : '0');
   const sub = document.querySelector('.menu-subtitle');
   if (sub) sub.textContent = t('tapFlySurvive');
-  // Language toggle
   if (el('langToggle')) el('langToggle').textContent = currentLang==='vi' ? '🇻🇳' : '🇬🇧';
-  // Screen titles
-  if (el('modesTitle')) el('modesTitle').textContent = '🎪 ' + t('modes_title').replace('🎪 ','');
-  if (el('achievementsTitle')) el('achievementsTitle').textContent = '🏆 ' + t('achievements_title').replace('🏆 ','');
-  // Settings
+  if (el('modesTitle')) el('modesTitle').textContent = '🎪 ' + t('modes_title');
+  if (el('achievementsTitle')) el('achievementsTitle').textContent = '🏆 ' + t('achievements_title');
   document.querySelectorAll('.lang-text').forEach(e => {
     const key = e.dataset.lang;
     if (key && LANG[currentLang][key]) e.textContent = LANG[currentLang][key];
   });
-  // Game over
   if (el('gameOverTitle')) el('gameOverTitle').textContent = t('gameOver');
   if (el('gameOverPoints')) el('gameOverPoints').textContent = t('points');
+  // Mode cards
+  document.querySelectorAll('.mode-card').forEach(card => {
+    const tag = card.querySelector('.mode-tag');
+    if (tag && !tag.classList.contains('locked')) {
+      const mode = card.dataset.mode;
+      if (currentMode === mode) tag.textContent = t('selected_tag');
+      else tag.textContent = t('select_tag');
+    }
+  });
+  // Back buttons
+  document.querySelectorAll('.btn-back').forEach(btn => { btn.textContent = t('back'); });
+  // Skin preview
+  const skinName = el('skinName');
+  const skinDesc = el('skinDesc');
+  if (skinName && window.Skins) {
+    const skin = Skins.getSelected();
+    const tr = currentLang==='en' && SKINS_EN[skin.id] ? SKINS_EN[skin.id] : null;
+    skinName.textContent = tr ? tr.name : skin.name;
+    if (skinDesc) skinDesc.textContent = tr ? tr.desc : skin.desc;
+  }
 }
 
 // ==================== FLAPPY CAT - ALL IN ONE ====================
@@ -2906,7 +2953,7 @@ function addXp(amount){
   while(stats.xp>=getXpForLevel(stats.level)){
     stats.xp-=getXpForLevel(stats.level);
     stats.level++;
-    showToast('🎊','Level Up!',`Đạt Lv.${stats.level}!`,3000);
+    showToast('🎊',t('levelup'),`Đạt Lv.${stats.level}!`,3000);
   }
   saveStats();
 }
@@ -2984,7 +3031,7 @@ function renderModes(){
     card.classList.toggle('selected',currentMode===mode);
     if(unlocked){
       tag.className='mode-tag'+(currentMode===mode?' active':'');
-      tag.textContent=currentMode===mode?'✓ Đang chọn':'Chọn';
+      tag.textContent=currentMode===mode?t('selected_tag'):t('select_tag');
     }
     card.onclick=()=>{
       if(!unlocked){
@@ -3053,7 +3100,7 @@ function renderSkinPreview(skin){
   document.getElementById('skinDesc').textContent=skinTr?skinTr.desc:skin.desc;
   const ue=document.getElementById('skinUnlock');
   if(unlockedSkins.has(skin.id)){
-    ue.textContent='✅ Đã sở hữu';ue.style.color='#00ff96';
+    ue.textContent=t('owned');ue.style.color='#00ff96';
   } else if(skin.price>0){
     ue.innerHTML=`💰 ${skin.price} coin <button onclick="buySkin('${skin.id}')" style="background:#ff96c8;color:white;border:none;padding:4px 12px;border-radius:8px;margin-left:8px;cursor:pointer;font-size:12px;">Mua</button>`;
     ue.style.color='#fbbf24';
