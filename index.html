@@ -33,6 +33,7 @@
       <div class="menu-buttons">
         <button class="btn btn-play" id="btnPlay">🎮 Chơi</button>
         <button class="btn btn-modes" id="btnModes">🎪 Chế độ</button>
+        <button class="btn btn-history" id="btnHistory">📜 Lịch sử</button>
         <button class="btn btn-skins" id="btnSkins">🎨 Skins</button>
         <button class="btn btn-leaderboard" id="btnLeaderboard">🏆 Xếp hạng</button>
         <button class="btn btn-missions" id="btnMissions">📋 Nhiệm vụ</button>
@@ -111,6 +112,7 @@
         <div class="stat"><div class="val" id="statCoins">0</div><div class="lbl">💰 Coin</div></div>
       </div>
       <div id="bestLabel" class="best"></div>
+      <div id="roastMsg" class="roast-msg"></div>
       <div class="gameover-buttons">
         <button class="btn btn-play" id="btnRestart">🔄 Chơi lại</button>
         <button class="btn btn-share" id="btnShare">📤 Chia sẻ</button>
@@ -204,6 +206,15 @@
       <h2>📋 Nhiệm vụ</h2>
     </div>
     <div class="missions-list" id="missionsList"></div>
+  </div>
+
+  <!-- HISTORY SCREEN -->
+  <div id="historyScreen" class="screen hidden">
+    <div class="screen-header">
+      <button class="btn-back" id="btnHistoryBack">←</button>
+      <h2>📜 Lịch sử</h2>
+    </div>
+    <div class="history-list" id="historyList"></div>
   </div>
 
   <!-- TOAST -->
@@ -540,6 +551,12 @@ function initGame(){
 function getGap(){return Math.max(canvas.width*0.25,canvas.width*0.39-difficulty*3)*MODES[currentMode].gapMul;}
 function getSpeed(){return(2.5+difficulty*0.15)*MODES[currentMode].speedMul;}
 function getInterval(){return Math.max(1800,2400-difficulty*40)/MODES[currentMode].speedMul;}
+function getMaxPipeChange(){
+  const base=0.20; // 20% at start
+  const scale=difficulty*0.01; // +1% per difficulty level
+  const modeMax={classic:0.35,hard:0.50,speed:0.50,tiny:0.30,night:0.45};
+  return Math.min(base+scale, modeMax[currentMode]||0.35);
+}
 function getTheme(){
   if(difficulty<5)return{sky1:'#667eea',sky2:'#764ba2',sky3:'#f093fb',pipe:'#2ecc71',pd:'#27ae60',mt:'rgba(100,60,150,0.3)'};
   if(difficulty<10)return{sky1:'#ee6676',sky2:'#d63384',sky3:'#6f42c1',pipe:'#e74c3c',pd:'#c0392b',mt:'rgba(150,60,60,0.3)'};
@@ -686,7 +703,7 @@ function updateGame(){
   if(now-lastPipe>getInterval()){
     const minT=70,maxT=canvas.height-gap-70;
     // Limit height change from previous pipe for smooth transitions
-    const maxChange=canvas.height*0.08;
+    const maxChange=canvas.height*getMaxPipeChange();
     let topH;
     if(prevPipeTopH===null){
       topH=minT+Math.random()*(maxT-minT);
@@ -759,8 +776,72 @@ function checkCollision(){
   return'none';
 }
 
+// ==================== ROAST / PRAISE MESSAGES ====================
+const MSGS={
+lt10:[
+'Mèo còn không bay được bằng gà...','Bạn có chắc là đang chơi, hay đang troll?','Điểm này... chắc mèo ngủ quên mất.','Ống nước sợ quá nên tự né hả?','Thua sớm vậy, tiết kiệm pin điện thoại à?','Flappy Cat hay Flappy Crap?','Mèo này chắc cần GPS.','Chơi lại đi, lần này cố gắng hơn 1 giây nhé.','Điểm 1 chữ số mà đòi share à?','Mẹ mèo còn bay giỏi hơn bạn.'
+],
+lt20:[
+'À, cũng được... nhưng mà vẫn tệ.','Bạn đang khởi động hay đây là thành tích rồi?','Mèo mới tập bay, cho nó thời gian.','Điểm này khiến ống nước cười khẩy.','Tưởng khó ai thua được, giờ biết rồi.','Chơi thêm lần nữa đi, lần sau sẽ khá hơn... maybe.','Ống nước đang thương hại bạn đấy.','Flappy Bird thấy chắc khóc thầm.','Điểm này dùng để làm gì? À, để chê.','Mèo hồng mà chơi như mèo mù.','Bạn có đọc hướng dẫn không đấy?','Tay run hay là game lag?','Điểm này... ít hơn số lần bạn thở.','Ống nước đang ngủ mà bạn vẫn thua.','Lần sau thử nhắm mắt chơi, biết đâu hơn.','Chơi kiểu này thì unlock skin nào cũng vô dụng.','Mèo đang cố hết sức rồi, tại bạn thôi.','Điểm 2 chữ số đầu tiên! Chúc mừng... tạm thời.','Game này dễ mà, ai cũng nói vậy.','Bạn đang giữ lại cho người khác thắng hả?'
+],
+lt40:[
+'OK, bắt đầu giống người biết chơi rồi.','Mèo đã biết bay! ...tạm thời.','Điểm này không xấu, nhưng cũng chẳng đẹp.','Ống nước bắt đầu tôn trọng bạn. Bắt đầu thôi.','Trình này đi thi được giải... khuyến khích.','Bạn đã qua được level "tập sự".','Mèo hồng đang cố gắng thật sự!','Điểm trung bình, phong độ ổn định... ở mức tệ.','Chơi vậy là được rồi, đừng cố hơn nữa kẻo mệt.','Có tiến bộ! Từ "tệ" lên "tạm được".','Ống nước thấy bạn là đối thủ... dễ xơi.','Mèo đã biết cách flap, giờ học cách sống sót.','Điểm này đủ để khoe với... mèo hàng xóm.','Bạn đã unlock kỹ năng "bay được 2 giây".','Không tệ! Nhưng cũng không tốt.','Flappy Cat level: Tập sự có triển vọng.','Mỗi lần chơi là một lần học... học cách thua.','Ống nước: "Lại ngươi à?"','Điểm này khiến game phải suy nghĩ lại về độ khó.','Bạn đang ở giữa "dở" và "khá". Ranh giới mong manh.','Mèo đang bay! À không, vừa rớt rồi.','Chơi game này cần kiên nhẫn. Bạn có không?','Điểm trung bình quốc gia... của mèo.','Ống nước đang đánh giá bạn. Im lặng.','Ít nhất bạn còn biết cách nhấn màn hình.','Mèo hồng: "Lần sau sẽ hơn!" (lần nào cũng nói vậy)','Điểm này... khiến tôi muốn viết bài review 1 sao.','Bạn đã chứng minh game này không dễ như mọi người nghĩ.','Trình này mà livestream chắc 0 viewer.','Mèo: "Sao cứ rớt hoài vậy ba?"','Ống nước: "Tôi thậm chí không cần di chuyển."','Điểm này là giới hạn hay là bạn đang tiết kiệm?','Có tiềm năng! Nhưng mà rất xa mới đạt được.','Mèo đang luyện công. Đợi thêm 1000 năm nữa.','Chơi vậy mà không rage quit? Nể thật sự.','Điểm này đủ để... không ai nhớ đến.','Flappy Cat difficulty: Bạn.','Ống nước đang cười. Thật đấy.','Mèo hồng: "Ít nhất mình cute."','Bạn đã thử chế độ hard chưa? À, classic còn thua.'
+],
+lt60:[
+'Ồ, bắt đầu ra dáng game thủ rồi!','Mèo đã tìm được đôi cánh thực sự!','Điểm này khiến ống nước phải nghiêm túc.','Bạn đã vượt qua level "tập sự". Chúc mừng!','Trình này đi thi được giải nhì... vì giải nhất quá khó.','Ống nước: "Đối thủ xứng tầm!"','Mèo hồng đang thể hiện bản lĩnh!','Điểm 2 chữ số đẹp! Gần 3 chữ số rồi.','Chơi game này mà được vậy là giỏi đấy.','Bạn đã unlock kỹ năng "sống sót lâu hơn 10 giây".','Flappy Cat level: Khá ổn.','Ống nước bắt đầu sợ bạn. Bắt đầu thôi.','Mèo: "Mình đang bay cao!" (vừa đâm ống xong)','Điểm này khiến tôi muốn... chơi thêm lần nữa.','Bạn có tố chất! Tiếp tục phát huy.','Mỗi ống nước qua được là một chiến thắng nhỏ.','Trình này mà hard mode chắc cũng... ừm.','Mèo hồng: "Lần này thật sự giỏi!"','Ống nước: "Người này khó xơi hơn tôi tưởng."','Điểm này đủ để khoe với bạn bè... nếu họ quan tâm.','Bạn đã chứng minh sự kiên trì có kết quả.','Flappy Cat level: Trung cấp.','Chơi vậy là top bao nhiêu % nhỉ? Chắc cũng được.','Mèo đang cảm thấy tự hào. Tạm thời.','Điểm này khiến game phải tôn trọng bạn hơn.','Ống nước: "Tôi phải thực sự né rồi."','Bạn đã unlock kỹ năng "combo x3"... nếu may mắn.','Mèo hồng: "Mình sẽ không dừng lại!" (sẽ dừng ở ống tiếp)','Điểm trung bình cao! Hay là điểm cao trung bình?','Chơi game này cần cả kỹ năng lẫn may mắn. Bạn có cả hai... tạm thời.','Ống nước đang lo lắng. Thật ra thì không.','Flappy Cat level: Giỏi nhưng chưa pro.','Mèo: "Đỉnh cao sự nghiệp!" (của ngày hôm nay)','Điểm này đáng được huy chương... bằng giấy.','Bạn đã phá kỷ lục cá nhân! ...của lần trước.','Ống nước: "Tôi thua rồi... à không, vẫn thắng."','Trình này mà khoe thì cũng được... miễn là không bị chê.','Mèo hồng đang lơ lửng! (trong giấc mơ)','Điểm này đủ để vào bảng xếp hạng... nếu bảng dài 1000 dòng.','Bạn đã unlock "thở oxy" cho mèo.'
+],
+lt80:[
+'WOW! Mèo này biết bay thật sự!','Điểm 2 chữ số cao! Pro player detected!','Ống nước: "Tôi xin hàng!"','Bạn đã đạt level "Chuyên gia né ống".','Mèo hồng: "Mình là huyền thoại!"','Điểm này khiến game phải ngả mũ.','Flappy Cat level: Cao thủ.','Ống nước đang run sợ. Không thật sự, nhưng mà.','Bạn đã unlock kỹ năng "combo x5" huyền thoại.','Mèo: "Ai là boss ở đây? À, ống nước."','Điểm này đáng được in ra và đóng khung.','Trình này đi thi giải quốc gia được luôn.','Ống nước: "Người này quá mạnh, tôi cần đồng đội."','Bạn đã chứng minh mèo bay được! Khoa học sai rồi.','Mèo hồng đang tung cánh! (thật sự luôn)','Điểm cao thế này thì khó mà chê được.','Flappy Cat level: Bậc thầy.','Ống nước: "Tôi sẽ nhớ ngươi... kẻ đã vượt qua tôi."','Bạn đã unlock danh hiệu "Mèo Bay".','Điểm này khiến tôi muốn... applaud.','Chơi game này mà được vậy thì bạn thuộc top %.','Mèo: "Đỉnh cao mới! Không gì cản được!" (sẽ cản ở ống tiếp)','Ống nước đang viết đơn xin nghỉ việc.','Bạn đã đạt trình "ít người đạt được".','Mèo hồng: "Mình sinh ra để bay!"','Điểm này đủ để mở khóa mọi thứ... nếu game cho phép.','Flappy Cat level: Pro player chính hiệu.','Ống nước: "Tôi thất bại trước thiên tài."','Bạn đã unlock "Thần gió".','Điểm cao vầy mà share thì cả nghìn like.','Mèo đang cảm ơn bạn vì đã chơi giỏi.','Ống nước: "Kỷ lục mới! Của riêng bạn."','Trình này mà làm tutorial chắc nghìn view.','Bạn đã chứng minh: Practice makes perfect.','Mèo hồng: "Tôi sẽ không bao giờ rớt!" (sẽ rớt)','Điểm này khiến game phải update difficulty.','Ống nước: "Tôi cần buff."','Bạn đã đạt level "Không thể chê".','Flappy Cat: Hall of Fame member.'
+],
+gte80:[
+'HUYỀN THOẠI! Mèo này phá đảo game!','Điểm 3 chữ số?! Bạn có phải người không vậy?!','Ống nước: "Tôi chính thức thua cuộc."','Bạn đã đạt level "Thần thánh".','Mèo hồng: "Tôi là CAT GOD!"','Điểm này không thể tin được! Screenshot đi!','Flappy Cat level: MAX LEVEL.','Ống nước đang cúi đầu tôn kính.','Bạn đã unlock danh hiệu "Bất khả chiến bại".','Mèo: "Trò chơi kết thúc. Tôi thắng."','Điểm này đáng được đưa vào sách kỷ lục Guinness.','Trình này mà thi đấu quốc tế thì... vô địch.','Ống nước: "Tôi xin lỗi vì đã tồn tại."','Bạn đã chứng minh: Mèo > Máy bay.','Mèo hồng: "Tôi vừa bay qua 100 ống!"','Điểm CAO NHẤT mà tôi từng thấy! (hôm nay)','Flappy Cat level: OVER 9000!','Ống nước: "Tôi sẽ giải nghệ."','Bạn đã unlock "Thần sấm".','Điểm này khiến cả server phải trầm trồ.','Chơi game này mà được vậy thì... bạn cần ra ngoài nhiều hơn.','Mèo: "Đỉnh cao nhân loại!" (nhân loại mèo)','Ống nước đang viết hồi ký: "Kẻ thù của tôi".','Bạn đã đạt trình "Thiên tài bẩm sinh".','Mèo hồng: "Tôi vừa phá đảo! ...thật sự luôn!"','Điểm này đủ để... ừm, rất ấn tượng.','Flappy Cat level: VÔ ĐỊCH.','Ống nước: "Tôi sẽ nhớ khoảnh khắc này... mãi mãi."','Bạn đã unlock "Huyền thoại sống".','Điểm này khiến tôi phải nghiêng mình.','Mèo đang bay trên mây! (theo nghĩa đen)','Ống nước: "Game over cho tôi, không phải cho bạn."','Bạn đã đạt level "Không còn gì để chê".','Mèo hồng: "Tôi vừa lập kỷ lục thế giới!" (trong lòng)','Điểm này... tôi không có từ nào để diễn tả.','Flappy Cat: LEGENDARY.','Ống nước: "Cảm ơn bạn đã cho tôi biết thế nào là thua."','Bạn đã unlock "Vua mèo".','Điểm này xứng đáng được tôn vinh bằng... một cái gật đầu.'
+]
+};
+function getRoastMessage(sc){
+  let pool;
+  if(sc<10)pool=MSGS.lt10;
+  else if(sc<20)pool=MSGS.lt20;
+  else if(sc<40)pool=MSGS.lt40;
+  else if(sc<60)pool=MSGS.lt60;
+  else if(sc<80)pool=MSGS.lt80;
+  else pool=MSGS.gte80;
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+// ==================== GAME HISTORY ====================
+function loadHistory(){try{return JSON.parse(localStorage.getItem('fc_history')||'[]');}catch{return[];}}
+function saveHistory(h){localStorage.setItem('fc_history',JSON.stringify(h));}
+function addToHistory(sc,mode,msg){
+  const h=loadHistory();
+  h.unshift({score:sc,mode,date:new Date().toLocaleString('vi-VN'),msg});
+  if(h.length>100)h.length=100;
+  saveHistory(h);
+}
+function renderHistory(){
+  const list=document.getElementById('historyList');
+  const h=loadHistory();
+  if(!h.length){list.innerHTML='<div class="lb-empty">Chưa có lịch sử chơi 🐱<br>Chơi ngay!</div>';return;}
+  list.innerHTML='';
+  h.forEach((e,i)=>{
+    const item=document.createElement('div');
+    item.className='history-item';
+    const medal=e.score>=80?'👑':e.score>=60?'💎':e.score>=40?'⭐':e.score>=20?'🎯':'🐱';
+    item.innerHTML=`
+      <div class="history-left">
+        <div class="history-score">${medal} ${e.score}</div>
+        <div class="history-meta">${e.mode||'classic'} · ${e.date}</div>
+      </div>
+      <div class="history-msg">${e.msg||''}</div>
+    `;
+    list.appendChild(item);
+  });
+}
+
 function gameOver(){
   state='over';stopMusic();playSound('die');
+  const roastMsg=getRoastMessage(score);
+  addToHistory(score,MODES[currentMode].name,roastMsg);
+
   spawnP(cat.x,cat.y,'#ff69b4',25);
   // update stats
   stats.totalGames++;stats.totalPipes+=pipesCleared;stats.totalPowerups+=powerupsCollected;
@@ -794,6 +875,7 @@ function gameOver(){
   },300);
   // update UI
   document.getElementById('finalScore').textContent=score;
+  document.getElementById('roastMsg').textContent='"'+roastMsg+'"';
   document.getElementById('statBest').textContent=stats.bestScore;
   document.getElementById('statPipes').textContent=pipesCleared;
   document.getElementById('statPowerups').textContent=powerupsCollected;
@@ -1114,7 +1196,7 @@ document.getElementById('toast').onclick = () => {
 };
 
 // ==================== SCREEN MANAGEMENT ====================
-const screens={menu:'menuScreen',skins:'skinsScreen',settings:'settingsScreen',achievements:'achievementsScreen',gameOver:'gameOverScreen',leaderboard:'leaderboardScreen',missions:'missionsScreen',profile:'profileScreen',modes:'modesScreen'};
+const screens={menu:'menuScreen',skins:'skinsScreen',settings:'settingsScreen',achievements:'achievementsScreen',gameOver:'gameOverScreen',leaderboard:'leaderboardScreen',missions:'missionsScreen',profile:'profileScreen',modes:'modesScreen',history:'historyScreen'};
 let currentScreen='menu';
 
 function showScreen(name){
@@ -1301,6 +1383,7 @@ document.getElementById('btnLeaderboard').onclick=()=>{showScreen('leaderboard')
 document.getElementById('btnMissions').onclick=()=>{showScreen('missions');renderMissions();};
 document.getElementById('btnProfile').onclick=()=>{showScreen('profile');renderProfile();};
 document.getElementById('btnModes').onclick=()=>{showScreen('modes');renderModes();};
+document.getElementById('btnHistory').onclick=()=>{showScreen('history');renderHistory();};
 document.getElementById('btnSettings').onclick=()=>{showScreen('settings');renderMusicList();};
 document.getElementById('btnAchievements').onclick=()=>{showScreen('achievements');renderAchievements();};
 document.getElementById('btnRestart').onclick=()=>{showScreen(null);document.getElementById('hud').classList.remove('hidden');startGame();};
@@ -1312,6 +1395,7 @@ document.getElementById('btnLeaderboardBack').onclick=()=>showScreen('menu');
 document.getElementById('btnMissionsBack').onclick=()=>showScreen('menu');
 document.getElementById('btnProfileBack').onclick=()=>showScreen('menu');
 document.getElementById('btnModesBack').onclick=()=>showScreen('menu');
+document.getElementById('btnHistoryBack').onclick=()=>showScreen('menu');
 
 // Leaderboard tabs
 document.querySelectorAll('.lb-tab').forEach(tab=>{

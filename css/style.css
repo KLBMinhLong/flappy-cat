@@ -689,6 +689,72 @@ canvas {
   box-shadow: 0 4px 15px rgba(236,72,153,0.3);
 }
 
+.btn-history {
+  background: linear-gradient(135deg, #14b8a6, #0d9488);
+  color: white;
+  box-shadow: 0 4px 15px rgba(20,184,166,0.3);
+}
+
+/* ==================== ROAST MESSAGE ==================== */
+.roast-msg {
+  color: rgba(255,255,255,0.7);
+  font-size: 13px;
+  font-style: italic;
+  text-align: center;
+  margin-bottom: 15px;
+  padding: 0 20px;
+  line-height: 1.4;
+  max-width: 280px;
+}
+
+/* ==================== HISTORY SCREEN ==================== */
+#historyScreen {
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+}
+
+.history-list {
+  padding: 15px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 12px;
+  border-left: 3px solid rgba(255,150,200,0.3);
+}
+
+.history-left {
+  flex-shrink: 0;
+  min-width: 70px;
+}
+
+.history-score {
+  font-size: 18px;
+  font-weight: 900;
+  color: #ffcc00;
+}
+
+.history-meta {
+  font-size: 10px;
+  color: rgba(255,255,255,0.3);
+  margin-top: 2px;
+}
+
+.history-msg {
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  font-style: italic;
+  line-height: 1.3;
+}
+
 /* ==================== MODES SCREEN ==================== */
 #modesScreen {
   background: linear-gradient(180deg, #1a0533 0%, #2d1b69 100%);
