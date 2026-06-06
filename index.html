@@ -530,6 +530,7 @@ function initGame(){
   score=0;combo=1;comboTimer=0;pipesCleared=0;powerupsCollected=0;
   difficulty=0;invincibleTimer=0;shakeTimer=0;shakeMag=0;
   lastPipe=performance.now()-1100;
+  lastUpdateTime=performance.now();
   activeShield=0;activeSlow=0;activeTiny=0;
   groundX=0;
 }
@@ -656,13 +657,17 @@ function spawnP(x,y,color,count){for(let i=0;i<count;i++)particles.push({x,y,vx:
 function addFloat(x,y,text,color){floatTexts.push({x,y,text,color,life:1,vy:-2});}
 
 // ==================== GAME LOGIC ====================
+let lastUpdateTime=performance.now();
 function updateGame(){
   if(state!=='playing')return;
-  const now=performance.now(),dt=16.67;
+  const now=performance.now();
+  const dt=Math.min(now-lastUpdateTime,50); // cap at 50ms to avoid spiral
+  lastUpdateTime=now;
+  const frameScale=dt/16.67; // normalize to ~60fps
   difficulty=Math.floor(score/5);
 
-  // cat physics
-  cat.vy+=GRAVITY;cat.y+=cat.vy;cat.rot=clamp(cat.vy*0.04,-0.5,1.2);
+  // cat physics (frame-rate independent)
+  cat.vy+=GRAVITY*frameScale;cat.y+=cat.vy*frameScale;cat.rot=clamp(cat.vy*0.04,-0.5,1.2);
 
   // timers
   if(invincibleTimer>0)invincibleTimer-=dt;
@@ -689,7 +694,7 @@ function updateGame(){
   }
 
   // move pipes
-  for(let i=pipes.length-1;i>=0;i--){pipes[i].x-=speed;if(pipes[i].x+pipeW()<-10)pipes.splice(i,1);}
+  for(let i=pipes.length-1;i>=0;i--){pipes[i].x-=speed*frameScale;if(pipes[i].x+pipeW()<-10)pipes.splice(i,1);}
 
   // scoring
   for(const p of pipes){
@@ -703,7 +708,7 @@ function updateGame(){
 
   // move & collect powerups
   for(let i=powerups.length-1;i>=0;i--){
-    powerups[i].x-=speed;
+    powerups[i].x-=speed*frameScale;
     if(!powerups[i].collected&&dist(cat.x,cat.y,powerups[i].x,powerups[i].y)<catSz()+14){
       powerups[i].collected=true;powerupsCollected++;playSound('powerup');
       spawnP(powerups[i].x,powerups[i].y,'#ffcc00',10);
@@ -718,9 +723,9 @@ function updateGame(){
   }
 
   // particles & float texts
-  for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx;p.y+=p.vy;p.vy+=0.1;p.life-=0.02;if(p.life<=0)particles.splice(i,1);}
-  for(let i=floatTexts.length-1;i>=0;i--){const t=floatTexts[i];t.y+=t.vy;t.life-=0.02;if(t.life<=0)floatTexts.splice(i,1);}
-  groundX+=speed;
+  for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx*frameScale;p.y+=p.vy*frameScale;p.vy+=0.1*frameScale;p.life-=0.02*frameScale;if(p.life<=0)particles.splice(i,1);}
+  for(let i=floatTexts.length-1;i>=0;i--){const t=floatTexts[i];t.y+=t.vy*frameScale;t.life-=0.02*frameScale;if(t.life<=0)floatTexts.splice(i,1);}
+  groundX+=speed*frameScale;
 
   // collision
   const hit=checkCollision();
@@ -1269,7 +1274,7 @@ function startDailyChallenge(){
   const minT=70,maxT=canvas.height-gap-70;
   for(let i=0;i<200;i++){
     const topH=minT+rng()*(maxT-minT);
-    pipes.push({x:canvas.width+i*getInterval()*getSpeed()/1000,topH,scored:false});
+    pipes.push({x:canvas.width+i*getInterval()*getSpeed()/60,topH,scored:false});
   }
   state='playing';
   updateScoreUI();updateComboUI();updatePUBar();
