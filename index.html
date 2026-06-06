@@ -2195,6 +2195,20 @@ const SKINS=[
   {id:'cyber',name:'Mèo Cyber',desc:'Neon & futuristic',body:'#06b6d4',head:'#22d3ee',ear:'#06b6d4',inner:'#a855f7',nose:'#a855f7',eye:'#a855f7',icon:'🤖',unlock:{type:'score',value:200},price:800},
   {id:'ghost',name:'Mèo Ma',desc:'Xuyên qua mọi vật cản',body:'rgba(200,220,255,0.6)',head:'rgba(220,235,255,0.7)',ear:'rgba(200,220,255,0.5)',inner:'rgba(150,180,255,0.5)',nose:'#c084fc',eye:'#c084fc',icon:'👻',unlock:{type:'dodged',value:500},price:600},
 ];
+const SKINS_EN={
+  'default':{name:'Pink Cat',desc:'Cute default pink cat'},
+  'blue':{name:'Blue Cat',desc:'Cool blue cat'},
+  'golden':{name:'Golden Cat',desc:'Lucky golden cat'},
+  'dark':{name:'Shadow Cat',desc:'Mysterious dark cat'},
+  'rainbow':{name:'Rainbow Cat',desc:'Shining rainbow cat'},
+  'ninja':{name:'Ninja Cat',desc:'Unstoppable ninja cat'},
+  'galaxy':{name:'Galaxy Cat',desc:'Travel through the galaxy'},
+  'fire':{name:'Fire Cat',desc:'Burn through every pipe'},
+  'ice':{name:'Ice Cat',desc:'Cool under pressure'},
+  'sakura':{name:'Sakura Cat',desc:'Gentle like spring'},
+  'cyber':{name:'Cyber Cat',desc:'Neon and futuristic'},
+  'ghost':{name:'Ghost Cat',desc:'Phase through obstacles'}
+};
 
 let selectedSkin='default', unlockedSkins=new Set(['default']);
 function loadSkins(){
@@ -2228,6 +2242,22 @@ const ACHIEVEMENTS=[
   {id:'pu10',name:'Sưu tầm',desc:'Nhặt 10 power-up',icon:'⭐',check:s=>s.totalPowerups>=10},
   {id:'pu50',name:'Tham lam',desc:'Nhặt 50 power-up',icon:'✨',check:s=>s.totalPowerups>=50},
 ];
+const ACHIEVEMENTS_EN={
+  'first':{name:'First Flight',desc:'Play for the first time'},
+  's10':{name:'Ten Pipes',desc:'Score 10 points'},
+  's25':{name:'Silver',desc:'Score 25 points'},
+  's50':{name:'Gold',desc:'Score 50 points'},
+  's100':{name:'Platinum',desc:'Score 100 points'},
+  's200':{name:'Legend',desc:'Score 200 points'},
+  'c5':{name:'Combo x5',desc:'Combo x5 in a row'},
+  'c10':{name:'Combo x10',desc:'Combo x10 in a row'},
+  'g10':{name:'Hard Worker',desc:'Play 10 times'},
+  'g50':{name:'Addicted',desc:'Play 50 times'},
+  'p100':{name:'100 Pipes',desc:'Pass 100 pipes total'},
+  'p500':{name:'500 Pipes',desc:'Pass 500 pipes total'},
+  'pu10':{name:'Collector',desc:'Collect 10 power-ups'},
+  'pu50':{name:'Greedy',desc:'Collect 50 power-ups'}
+};
 
 function tryUnlockSkins(){
   const newOnes=[];
@@ -2539,6 +2569,15 @@ lt10:[
 lt20:[
 'À, cũng được... nhưng mà vẫn tệ.','Bạn đang khởi động hay đây là thành tích rồi?','Mèo mới tập bay, cho nó thời gian.','Điểm này khiến ống nước cười khẩy.','Tưởng khó ai thua được, giờ biết rồi.','Chơi thêm lần nữa đi, lần sau sẽ khá hơn... maybe.','Ống nước đang thương hại bạn đấy.','Flappy Bird thấy chắc khóc thầm.','Điểm này dùng để làm gì? À, để chê.','Mèo hồng mà chơi như mèo mù.','Bạn có đọc hướng dẫn không đấy?','Tay run hay là game lag?','Điểm này... ít hơn số lần bạn thở.','Ống nước đang ngủ mà bạn vẫn thua.','Lần sau thử nhắm mắt chơi, biết đâu hơn.','Chơi kiểu này thì unlock skin nào cũng vô dụng.','Mèo đang cố hết sức rồi, tại bạn thôi.','Điểm 2 chữ số đầu tiên! Chúc mừng... tạm thời.','Game này dễ mà, ai cũng nói vậy.','Bạn đang giữ lại cho người khác thắng hả?','Điểm 10+ rồi, khóc hay cười đây?','Ống nước: "Lại ngươi? Tôi mệt rồi."', 'Bạn chơi như đang cố tình thua vậy.','Mèo: "Pilot này lái máy bay cũng rớt."', 'Điểm này... khiến tôi muốn refund game.','Chơi 10 lần mà được có vậy? Tôi lo cho bạn.','Flappy Cat hay Flappy Tragedy?','Bạn đang thử nghiệm giới hạn của sự kiên nhẫn?','Ống nước thấy bạn là đối thủ... dễ thương.','Mèo hồng đang xin đổi pilot.','Điểm này khiến game phải hiện cảnh báo sức khỏe.','Chơi vậy mà dám tự tin thế?','Bạn nên thử game giải ô chữ. Dễ hơn.','Ống nước: "Tôi thậm chí không cần né."', 'Mèo: "Sao không cho gà bay thay?"','Điểm này ít hơn IQ của ống nước.','Bạn đang làm giàu cho người khác bằng cách thua.','Flappy Cat leaderboard từ chối ghi nhận.','Chơi kiểu này thì mèo cũng bất lực.','Điểm 2 chữ số mà mừng như trúng số.'
 ],
+// English roasts
+const MSGS_EN={
+lt10:[
+'Even a chicken flies better than you...','Are you playing or just trolling?','This score... the cat fell asleep.','The pipes dodged themselves out of pity.','Quitting so fast to save battery?','Flappy Cat or Flappy Crap?','This cat needs GPS.','Play again, try to last 1 more second this time.','Single digit score and you want to share?','Your mom flies better than you.','You dare open the game with this skill?','You are speedrunning losing.','Frogs jump farther than your cat flies.','The game is auto-lowering difficulty for you.','The cat falls faster than money in your wallet.','Playing with your feet would be better.','You lost before the pipes even appeared.','Flappy Cat uninstall rate +1.','You are the reason games have tutorials.','This score makes me lose faith in humanity.','Even a 4-year-old plays better. You do not.','The cat is crying inside.','You lose faster than the game loads.','Try another game. Easier one.','The pipes do not even need to move to beat you.','This score requires a tiny font to display.','The cat says: Why did you pick this pilot?','You are contributing to the worst player stats.','Play again, but this time... no hope.'
+],
+lt20:[
+'OK... but still terrible.','Are you warming up or is this your best?','Cat just learned to fly, give it time.','This score makes the pipes smirk.','I thought nobody could lose this fast, now I know.','Play again, maybe next time will be better... maybe.','The pipes are pitying you.','Flappy Bird would cry seeing this.','What is this score for? Oh right, to mock.','Pink cat but plays like a blind cat.','Did you read the instructions?','Shaky hands or game lag?','This score... less than your breath count.','The pipes are sleeping and you still lose.','Try playing with eyes closed, might do better.','No skin can save this gameplay.','The cat is trying its best, it is your fault.','First double digit score! Congrats... for now.','This game is easy, everyone says so.','Are you saving wins for others?','10+ score, crying or laughing?','The pipes: You again? I am tired.','You play like you are losing on purpose.','The cat says: This pilot would crash a plane too.','This score makes me want a refund.','10 tries and this is all? I am worried about you.','Flappy Cat or Flappy Tragedy?','You are testing the limits of patience.','The pipes: I do not even need to dodge.','The cat says: Why not let a chicken fly instead?','This score is lower than the pipes IQ.','You are making others richer by losing.','Flappy Cat leaderboard refuses to record this.','Playing like this, even the cat gives up.','Double digit score and celebrating like winning the lottery.'
+]
+};
 lt40:[
 'OK, bắt đầu giống người biết chơi rồi.','Mèo đã biết bay! ...tạm thời.','Điểm này không xấu, nhưng cũng chẳng đẹp.','Ống nước bắt đầu tôn trọng bạn. Bắt đầu thôi.','Trình này đi thi được giải... khuyến khích.','Bạn đã qua được level "tập sự".','Mèo hồng đang cố gắng thật sự!','Điểm trung bình, phong độ ổn định... ở mức tệ.','Chơi vậy là được rồi, đừng cố hơn nữa kẻo mệt.','Có tiến bộ! Từ "tệ" lên "tạm được".','Ống nước thấy bạn là đối thủ... dễ xơi.','Mèo đã biết cách flap, giờ học cách sống sót.','Điểm này đủ để khoe với... mèo hàng xóm.','Bạn đã unlock kỹ năng "bay được 2 giây".','Không tệ! Nhưng cũng không tốt.','Flappy Cat level: Tập sự có triển vọng.','Mỗi lần chơi là một lần học... học cách thua.','Ống nước: "Lại ngươi à?"','Điểm này khiến game phải suy nghĩ lại về độ khó.','Bạn đang ở giữa "dở" và "khá". Ranh giới mong manh.','Mèo đang bay! À không, vừa rớt rồi.','Chơi game này cần kiên nhẫn. Bạn có không?','Điểm trung bình quốc gia... của mèo.','Ống nước đang đánh giá bạn. Im lặng.','Ít nhất bạn còn biết cách nhấn màn hình.','Mèo hồng: "Lần sau sẽ hơn!" (lần nào cũng nói vậy)','Điểm này... khiến tôi muốn viết bài review 1 sao.','Bạn đã chứng minh game này không dễ như mọi người nghĩ.','Trình này mà livestream chắc 0 viewer.','Mèo: "Sao cứ rớt hoài vậy ba?"','Ống nước: "Tôi thậm chí không cần di chuyển."','Điểm này là giới hạn hay là bạn đang tiết kiệm?','Có tiềm năng! Nhưng mà rất xa mới đạt được.','Mèo đang luyện công. Đợi thêm 1000 năm nữa.','Chơi vậy mà không rage quit? Nể thật sự.','Điểm này đủ để... không ai nhớ đến.','Flappy Cat difficulty: Bạn.','Ống nước đang cười. Thật đấy.','Mèo hồng: "Ít nhất mình cute."','Bạn đã thử chế độ hard chưa? À, classic còn thua.'
 ],
@@ -2562,6 +2601,14 @@ pro:`<svg viewBox="0 0 64 64" width="48" height="48"><polygon points="12,20 6,2 
 legend:`<svg viewBox="0 0 64 64" width="48" height="48"><polygon points="12,20 6,2 22,14" fill="#ce93d8"/><polygon points="52,14 58,2 42,20" fill="#ce93d8"/><polygon points="14,18 9,6 21,15" fill="#f3e5f5"/><polygon points="50,15 55,6 43,18" fill="#f3e5f5"/><circle cx="32" cy="36" r="22" fill="#ce93d8"/><circle cx="32" cy="36" r="18" fill="#f3e5f5"/><circle cx="24" cy="30" r="5" fill="#1a1a2e"/><circle cx="40" cy="30" r="5" fill="#1a1a2e"/><circle cx="26" cy="28" r="2.5" fill="white"/><circle cx="42" cy="28" r="2.5" fill="white"/><circle cx="24.5" cy="29.5" r="1" fill="white"/><circle cx="40.5" cy="29.5" r="1" fill="white"/><polygon points="32,38 29,41 35,41" fill="#1a1a2e"/><path d="M22 44 Q32 56 42 44" stroke="#1a1a2e" stroke-width="1.8" fill="none" stroke-linecap="round"/><line x1="6" y1="35" x2="15" y2="37" stroke="#1a1a2e" stroke-width="1.2" stroke-linecap="round"/><line x1="6" y1="41" x2="15" y2="40" stroke="#1a1a2e" stroke-width="1.2" stroke-linecap="round"/><line x1="6" y1="47" x2="15" y2="43" stroke="#1a1a2e" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="35" x2="49" y2="37" stroke="#1a1a2e" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="41" x2="49" y2="40" stroke="#1a1a2e" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="47" x2="49" y2="43" stroke="#1a1a2e" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="20" cy="40" rx="6" ry="4" fill="rgba(255,150,200,0.4)"/><ellipse cx="44" cy="40" rx="6" ry="4" fill="rgba(255,150,200,0.4)"/><circle cx="14" cy="10" r="2" fill="#ffeb3b" opacity="0.8"/><circle cx="50" cy="10" r="2" fill="#ffeb3b" opacity="0.8"/><circle cx="32" cy="4" r="1.5" fill="#ffeb3b" opacity="0.6"/></svg>`
 };
 function getRoastMessage(sc){
+  if(currentLang==='en'){
+    let pool,cls;
+    if(sc<10){pool=MSGS_EN.lt10;cls='trash';}
+    else if(sc<20){pool=MSGS_EN.lt20;cls='tease';}
+    else{pool=MSGS.lt40||MSGS.lt20;cls='mid';}
+    return{msg:pool[Math.floor(Math.random()*pool.length)],cat:CAT_FACES[cls],cls};
+  }
+
   let pool,cls;
   if(sc<10){pool=MSGS.lt10;cls='trash';}
   else if(sc<20){pool=MSGS.lt20;cls='tease';}
@@ -3000,8 +3047,9 @@ function renderSkins(){
 }
 
 function renderSkinPreview(skin){
-  document.getElementById('skinName').textContent=skin.name;
-  document.getElementById('skinDesc').textContent=skin.desc;
+  const skinTr=currentLang==='en'&&SKINS_EN[skin.id]?SKINS_EN[skin.id]:null;
+  document.getElementById('skinName').textContent=skinTr?skinTr.name:skin.name;
+  document.getElementById('skinDesc').textContent=skinTr?skinTr.desc:skin.desc;
   const ue=document.getElementById('skinUnlock');
   if(unlockedSkins.has(skin.id)){
     ue.textContent='✅ Đã sở hữu';ue.style.color='#00ff96';
@@ -3090,6 +3138,7 @@ function initPrevUnlocked(){
   }
 }
 function renderAchievements(){
+  const ach=currentLang==='en'?ACHIEVEMENTS_EN:{};
   const list=document.getElementById('achievementsList');list.innerHTML='';
   for(const a of ACHIEVEMENTS){
     const ok=a.check(stats);
