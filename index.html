@@ -1587,7 +1587,7 @@ menuLoop();
     if (active) return; active = true;
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
-    camera.position.set(0, 0.1, 5.5);
+    camera.position.set(0, 0.25, 6.0);
     renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
     renderer.setSize(400, 400);
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -1793,7 +1793,7 @@ menuLoop();
     tailM = new THREE.Mesh(new THREE.TubeGeometry(tc, 20, 0.08, 12, false), fur);
     tailM.castShadow = true; catGroup.add(tailM);
 
-    catGroup.position.y = 0.05;
+    catGroup.position.y = -0.15;
 
     canvas.addEventListener('mousemove', e=>{const r=canvas.getBoundingClientRect();mx=((e.clientX-r.left)/r.width-.5)*2;my=((e.clientY-r.top)/r.height-.5)*2;});
     canvas.addEventListener('mouseleave', ()=>{mx=0;my=0;});
@@ -1807,7 +1807,7 @@ menuLoop();
     animId = requestAnimationFrame(animate);
     const t = performance.now() * 0.001;
 
-    catGroup.position.y = 0.05 + Math.sin(t*1.0)*0.03;
+    catGroup.position.y = -0.15 + Math.sin(t*1.0)*0.03;
     catGroup.rotation.z = Math.sin(t*0.7)*0.015;
 
     catGroup.rotation.y += (mx*0.25 - catGroup.rotation.y)*0.04;
