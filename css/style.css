@@ -261,12 +261,13 @@ canvas {
     height: 150px;
   }
   .menu-title {
-    font-size: 32px;
-    background: linear-gradient(135deg, #fff0f5, #ff69b4, #ff1493);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    filter: drop-shadow(0 0 12px rgba(255,20,147,0.5));
+  font-size: 32px;
+  color: #ff69b4;
+  background: linear-gradient(135deg, #fff0f5, #ff69b4, #ff1493) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  filter: drop-shadow(0 0 12px rgba(255,20,147,0.5));
   }
   .menu-buttons {
     width: 200px;

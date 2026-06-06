@@ -1668,29 +1668,41 @@ menuLoop();
     const smileMat = new THREE.MeshStandardMaterial({color:0xFF6088, roughness:0.4});
     const padMat = new THREE.MeshStandardMaterial({color:0xFFA0A8, roughness:0.5});
 
-    // ===== HEAD - SPHERE =====
+    // ===== HEAD - cat-shaped (wider top, narrower chin) =====
     const head = new THREE.Mesh(new THREE.SphereGeometry(1.1, 64, 64), furMat);
+    head.scale.set(1.02, 0.95, 0.92);
     head.castShadow = true;
     catGroup.add(head);
+    // Forehead (wider, flatter top)
+    const forehead = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), furMat);
+    forehead.position.set(0, 0.5, 0.55);
+    forehead.scale.set(1.15, 0.35, 0.5);
+    catGroup.add(forehead);
+    // Chin (narrower bottom)
+    const chin = new THREE.Mesh(new THREE.SphereGeometry(0.25, 24, 24), furMat);
+    chin.position.set(0, -0.5, 0.6);
+    chin.scale.set(0.8, 0.5, 0.4);
+    catGroup.add(chin);
 
-    // ===== EARS - POINTED (cone) with PINK inner =====
+    // ===== EARS - SMOOTH, ROUNDED =====
     function mkEar(x, rz) {
       const g = new THREE.Group();
-      // Outer ear - POINTED cone
-      const earGeo = new THREE.ConeGeometry(0.32, 0.85, 4);
+      // Outer ear - rounded egg shape (wider base, smooth tip)
+      const earGeo = new THREE.SphereGeometry(0.35, 32, 32);
+      earGeo.scale(0.85, 1.2, 0.45);
       const ear = new THREE.Mesh(earGeo, furMat);
       ear.castShadow = true; g.add(ear);
       // Inner ear - PINK
-      const innerGeo = new THREE.ConeGeometry(0.18, 0.5, 4);
+      const innerGeo = new THREE.SphereGeometry(0.22, 32, 32);
+      innerGeo.scale(0.7, 1.0, 0.35);
       const inner = new THREE.Mesh(innerGeo, innerEarMat);
-      inner.position.set(0, 0.04, 0.06);
-      inner.scale.set(1, 1, 0.5);
+      inner.position.set(0, 0.02, 0.06);
       g.add(inner);
-      g.position.set(x, 0.88, 0.1);
+      g.position.set(x, 0.85, 0.1);
       g.rotation.z = rz;
       return g;
     }
-    earL = mkEar(-0.5, 0.2); earR = mkEar(0.5, -0.2);
+    earL = mkEar(-0.5, 0.18); earR = mkEar(0.5, -0.18);
     catGroup.add(earL); catGroup.add(earR);
 
     // ===== EYES - BIG, ROUND, ON HEAD SURFACE =====
