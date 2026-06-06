@@ -32,7 +32,6 @@
       <div class="menu-streak" id="menuStreak"></div>
       <div class="menu-buttons">
         <button class="btn btn-play" id="btnPlay">🎮 Chơi</button>
-        <button class="btn btn-daily" id="btnDaily">🎯 Thử thách ngày</button>
         <button class="btn btn-modes" id="btnModes">🎪 Chế độ</button>
         <button class="btn btn-skins" id="btnSkins">🎨 Skins</button>
         <button class="btn btn-leaderboard" id="btnLeaderboard">🏆 Xếp hạng</button>
@@ -521,6 +520,7 @@ let score, combo, comboTimer, pipesCleared, powerupsCollected;
 let difficulty, invincibleTimer, shakeTimer, shakeMag;
 let lastPipe, activeShield, activeSlow, activeTiny;
 let groundX=0;
+let prevPipeTopH=null; // track previous pipe height for smooth transitions
 let starField=[];
 for(let i=0;i<50;i++) starField.push({x:Math.random(),y:Math.random()*0.7,s:0.5+Math.random()*2,sp:0.0002+Math.random()*0.0005});
 
@@ -533,12 +533,13 @@ function initGame(){
   lastUpdateTime=performance.now();
   activeShield=0;activeSlow=0;activeTiny=0;
   groundX=0;
+  prevPipeTopH=null;
 }
 
 // ==================== DIFFICULTY ====================
-function getGap(){if(dailyGap!==null)return dailyGap;return Math.max(canvas.width*0.25,canvas.width*0.39-difficulty*3)*MODES[currentMode].gapMul;}
+function getGap(){return Math.max(canvas.width*0.25,canvas.width*0.39-difficulty*3)*MODES[currentMode].gapMul;}
 function getSpeed(){return(2.5+difficulty*0.15)*MODES[currentMode].speedMul;}
-function getInterval(){return Math.max(1000,1600-difficulty*40)/MODES[currentMode].speedMul;}
+function getInterval(){return Math.max(1800,2400-difficulty*40)/MODES[currentMode].speedMul;}
 function getTheme(){
   if(difficulty<5)return{sky1:'#667eea',sky2:'#764ba2',sky3:'#f093fb',pipe:'#2ecc71',pd:'#27ae60',mt:'rgba(100,60,150,0.3)'};
   if(difficulty<10)return{sky1:'#ee6676',sky2:'#d63384',sky3:'#6f42c1',pipe:'#e74c3c',pd:'#c0392b',mt:'rgba(150,60,60,0.3)'};
@@ -658,7 +659,6 @@ function addFloat(x,y,text,color){floatTexts.push({x,y,text,color,life:1,vy:-2})
 
 // ==================== GAME LOGIC ====================
 let lastUpdateTime=performance.now();
-let dailyGap=null; // locked gap for daily challenge
 function updateGame(){
   if(state!=='playing')return;
   const now=performance.now();
@@ -685,7 +685,17 @@ function updateGame(){
   // spawn pipes
   if(now-lastPipe>getInterval()){
     const minT=70,maxT=canvas.height-gap-70;
-    const topH=minT+Math.random()*(maxT-minT);
+    // Limit height change from previous pipe for smooth transitions
+    const maxChange=canvas.height*0.08;
+    let topH;
+    if(prevPipeTopH===null){
+      topH=minT+Math.random()*(maxT-minT);
+    }else{
+      const newMin=Math.max(minT,prevPipeTopH-maxChange);
+      const newMax=Math.min(maxT,prevPipeTopH+maxChange);
+      topH=newMin+Math.random()*(newMax-newMin);
+    }
+    prevPipeTopH=topH;
     pipes.push({x:canvas.width,topH,scored:false});
     if(Math.random()<0.2){
       const types=['shield','slow','tiny'];
@@ -1244,19 +1254,6 @@ function renderMusicList(){
   }
 }
 
-// ==================== DAILY CHALLENGE ====================
-function getDailySeed(){
-  const d=new Date();
-  return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
-}
-function seededRandom(seed){
-  let s=seed;
-  return function(){
-    s=(s*16807)%2147483647;
-    return(s-1)/2147483646;
-  };
-}
-let isDailyMode=false;
 let currentMode='classic';
 const MODES={
   classic:{name:'Classic',unlock:0,coinMul:1,speedMul:1,gapMul:1,sizeMul:1},
@@ -1265,38 +1262,6 @@ const MODES={
   tiny:{name:'Tiny Cat',unlock:3,coinMul:1.5,speedMul:1,gapMul:1.1,sizeMul:0.6},
   night:{name:'Night Mode',unlock:8,coinMul:2,speedMul:1.2,gapMul:0.9,sizeMul:1},
 };
-function startDailyChallenge(){
-  isDailyMode=true;
-  if(menuAnimFrame){cancelAnimationFrame(menuAnimFrame);menuAnimFrame=null;}
-  initGame();
-  // Lock gap size so it doesn't shrink as difficulty increases
-  dailyGap=getGap();
-  // Ensure canvas has valid dimensions
-  if(canvas.width<100||canvas.height<100){
-    canvas.width=window.innerWidth;
-    canvas.height=window.innerHeight;
-  }
-  // Pre-generate pipes with seeded random
-  const rng=seededRandom(getDailySeed());
-  const pw=pipeW();
-  // Ensure spacing is always larger than pipe width with generous room
-  const spacing=Math.max(pw*6, canvas.width*0.6);
-  const minT=70,maxT=canvas.height-dailyGap-70;
-  let prevTopH=minT+(maxT-minT)*0.5; // start in middle
-  const maxChange=canvas.height*0.06; // max 6% screen height change per pipe
-  for(let i=0;i<200;i++){
-    const newMin=Math.max(minT,prevTopH-maxChange);
-    const newMax=Math.min(maxT,prevTopH+maxChange);
-    const topH=newMin+rng()*(newMax-newMin);
-    pipes.push({x:canvas.width+i*spacing,topH,scored:false});
-    prevTopH=topH;
-  }
-  state='playing';
-  updateScoreUI();updateComboUI();updatePUBar();
-  startMusic();
-  if(animFrame)cancelAnimationFrame(animFrame);
-  gameLoop();
-}
 
 // ==================== SHARE SCORE ====================
 function shareScore(){
@@ -1329,10 +1294,7 @@ function buySkin(skinId){
 // ==================== BUTTON WIRING ====================
 document.getElementById('btnShare').onclick=()=>shareScore();
 document.getElementById('btnPlay').onclick=()=>{
-  isDailyMode=false;dailyGap=null;initAudio();showScreen(null);document.getElementById('hud').classList.remove('hidden');startGame();
-};
-document.getElementById('btnDaily').onclick=()=>{
-  isDailyMode=true;initAudio();showScreen(null);document.getElementById('hud').classList.remove('hidden');startDailyChallenge();
+  initAudio();showScreen(null);document.getElementById('hud').classList.remove('hidden');startGame();
 };
 document.getElementById('btnSkins').onclick=()=>{showScreen('skins');renderSkins();};
 document.getElementById('btnLeaderboard').onclick=()=>{showScreen('leaderboard');renderLeaderboard('all');};
@@ -1341,8 +1303,8 @@ document.getElementById('btnProfile').onclick=()=>{showScreen('profile');renderP
 document.getElementById('btnModes').onclick=()=>{showScreen('modes');renderModes();};
 document.getElementById('btnSettings').onclick=()=>{showScreen('settings');renderMusicList();};
 document.getElementById('btnAchievements').onclick=()=>{showScreen('achievements');renderAchievements();};
-document.getElementById('btnRestart').onclick=()=>{isDailyMode=false;dailyGap=null;showScreen(null);document.getElementById('hud').classList.remove('hidden');startGame();};
-document.getElementById('btnBackToMenu').onclick=()=>{if(animFrame)cancelAnimationFrame(animFrame);stopMusic();document.getElementById('menuHighscore').textContent=`Best: ${stats.bestScore}`;document.getElementById('menuCoins').textContent=`💰 ${stats.coins}`;if(stats.dailyStreak>1)document.getElementById('menuStreak').textContent=`🔥 Streak: ${stats.dailyStreak} ngày liên tiếp`;else document.getElementById('menuStreak').textContent='';isDailyMode=false;dailyGap=null;showScreen('menu');if(!menuAnimFrame)menuLoop();};
+document.getElementById('btnRestart').onclick=()=>{showScreen(null);document.getElementById('hud').classList.remove('hidden');startGame();};
+document.getElementById('btnBackToMenu').onclick=()=>{if(animFrame)cancelAnimationFrame(animFrame);stopMusic();document.getElementById('menuHighscore').textContent=`Best: ${stats.bestScore}`;document.getElementById('menuCoins').textContent=`💰 ${stats.coins}`;if(stats.dailyStreak>1)document.getElementById('menuStreak').textContent=`🔥 Streak: ${stats.dailyStreak} ngày liên tiếp`;else document.getElementById('menuStreak').textContent='';showScreen('menu');if(!menuAnimFrame)menuLoop();};
 document.getElementById('btnSkinsBack').onclick=()=>showScreen('menu');
 document.getElementById('btnSettingsBack').onclick=()=>showScreen('menu');
 document.getElementById('btnAchievementsBack').onclick=()=>showScreen('menu');
