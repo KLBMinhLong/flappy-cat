@@ -231,11 +231,17 @@ const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 function resize() {
   const container = document.getElementById('gameContainer');
-  canvas.width = container.clientWidth;
-  canvas.height = container.clientHeight;
+  const w = container.clientWidth || window.innerWidth;
+  const h = container.clientHeight || window.innerHeight;
+  if (w > 0 && h > 0) {
+    canvas.width = w;
+    canvas.height = h;
+  }
 }
 resize();
 window.addEventListener('resize', resize);
+// Re-resize after a tick in case container wasn't ready
+requestAnimationFrame(resize);
 
 // ==================== AUDIO ====================
 let audioCtx = null, masterGain = null;
