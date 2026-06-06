@@ -1729,23 +1729,60 @@ menuLoop();
     noseM.position.set(0, -0.08, 1.18);
     catGroup.add(noseM);
 
-    // ===== MOUTH - ON SURFACE =====
-    const sGeo = new THREE.TorusGeometry(0.07, 0.01, 8, 16, Math.PI*0.5);
-    const sL = new THREE.Mesh(sGeo, smileMat);
-    sL.position.set(-0.04, -0.18, 1.12);
-    sL.rotation.set(0.15, 0.3, 0.2);
-    catGroup.add(sL);
-    const sR = new THREE.Mesh(sGeo, smileMat);
-    sR.position.set(0.04, -0.18, 1.12);
-    sR.rotation.set(0.15, -0.3, -0.2);
-    catGroup.add(sR);
+    // ===== MOUTH - W-shape cat mouth =====
+    // Nose-to-mouth vertical line
+    const vlGeo = new THREE.CylinderGeometry(0.008, 0.008, 0.1, 8);
+    const vLine = new THREE.Mesh(vlGeo, smileMat);
+    vLine.position.set(0, -0.13, 1.16);
+    catGroup.add(vLine);
 
-    // ===== WHISKERS =====
-    function wk(x,y,z,ry,rz,l){const g=new THREE.CylinderGeometry(.005,.002,l||.6,6);g.rotateZ(Math.PI/2);const m=new THREE.Mesh(g,whiskerMat);m.position.set(x,y,z);m.rotation.y=ry;m.rotation.z=rz;catGroup.add(m);}
-    wk(-0.45,-0.08,1.0,0.08,0.05,0.65); wk(-0.47,-0.14,1.0,0.08,-0.05,0.68);
-    wk(-0.43,-0.02,1.0,0.08,0.12,0.62); wk(-0.41,0.04,1.0,0.08,0.18,0.58);
-    wk(0.45,-0.08,1.0,-0.08,-0.05,0.65); wk(0.47,-0.14,1.0,-0.08,0.05,0.68);
-    wk(0.43,-0.02,1.0,-0.08,-0.12,0.62); wk(0.41,0.04,1.0,-0.08,-0.18,0.58);
+    // Left smile curve
+    const curveL = new THREE.QuadraticBezierCurve3(
+      new THREE.Vector3(0, -0.18, 1.16),
+      new THREE.Vector3(-0.06, -0.23, 1.14),
+      new THREE.Vector3(-0.12, -0.18, 1.12)
+    );
+    const tubeL = new THREE.TubeGeometry(curveL, 12, 0.008, 8, false);
+    catGroup.add(new THREE.Mesh(tubeL, smileMat));
+
+    // Right smile curve
+    const curveR = new THREE.QuadraticBezierCurve3(
+      new THREE.Vector3(0, -0.18, 1.16),
+      new THREE.Vector3(0.06, -0.23, 1.14),
+      new THREE.Vector3(0.12, -0.18, 1.12)
+    );
+    const tubeR = new THREE.TubeGeometry(curveR, 12, 0.008, 8, false);
+    catGroup.add(new THREE.Mesh(tubeR, smileMat));
+
+    // ===== WHISKERS - 3 per side, thicker, with dots =====
+    // Whisker dots (small spheres where whiskers attach)
+    const dotGeo = new THREE.SphereGeometry(0.018, 10, 10);
+    const dotMat = new THREE.MeshBasicMaterial({color:0x665544});
+    [[-0.28,-0.12],[ -0.3,-0.18],[-0.26,-0.06]].forEach(([dx,dy])=>{
+      const d=new THREE.Mesh(dotGeo,dotMat);d.position.set(dx,dy,1.1);catGroup.add(d);
+    });
+    [[0.28,-0.12],[0.3,-0.18],[0.26,-0.06]].forEach(([dx,dy])=>{
+      const d=new THREE.Mesh(dotGeo,dotMat);d.position.set(dx,dy,1.1);catGroup.add(d);
+    });
+
+    // Whiskers using curve tubes (more natural than straight cylinders)
+    function mkWhisker(startX, startY, endX, endY, z) {
+      const curve = new THREE.QuadraticBezierCurve3(
+        new THREE.Vector3(startX, startY, z),
+        new THREE.Vector3((startX+endX)*0.5, (startY+endY)*0.5 + (startY>0 ? 0.02 : -0.02), z + 0.03),
+        new THREE.Vector3(endX, endY, z)
+      );
+      const geo = new THREE.TubeGeometry(curve, 10, 0.006, 6, false);
+      return new THREE.Mesh(geo, whiskerMat);
+    }
+    // Left whiskers (3, radiating outward)
+    catGroup.add(mkWhisker(-0.28,-0.12, -0.75,-0.08, 1.05));
+    catGroup.add(mkWhisker(-0.3,-0.18, -0.78,-0.2, 1.05));
+    catGroup.add(mkWhisker(-0.26,-0.06, -0.72,0.02, 1.05));
+    // Right whiskers (3)
+    catGroup.add(mkWhisker(0.28,-0.12, 0.75,-0.08, 1.05));
+    catGroup.add(mkWhisker(0.3,-0.18, 0.78,-0.2, 1.05));
+    catGroup.add(mkWhisker(0.26,-0.06, 0.72,0.02, 1.05));
 
     // ===== BLUSH =====
     const blMat = new THREE.MeshBasicMaterial({color:0xFF80A0, transparent:true, opacity:0.25});
