@@ -1284,9 +1284,14 @@ function startDailyChallenge(){
   const pw=pipeW();
   const spacing=pw*4; // pipes spaced 4x pipe width apart
   const minT=70,maxT=canvas.height-gap-70;
+  let prevTopH=minT+(maxT-minT)*0.5; // start in middle
+  const maxChange=canvas.height*0.12; // max 12% screen height change per pipe
   for(let i=0;i<200;i++){
-    const topH=minT+rng()*(maxT-minT);
+    const newMin=Math.max(minT,prevTopH-maxChange);
+    const newMax=Math.min(maxT,prevTopH+maxChange);
+    const topH=newMin+rng()*(newMax-newMin);
     pipes.push({x:canvas.width+i*spacing,topH,scored:false});
+    prevTopH=topH;
   }
   state='playing';
   updateScoreUI();updateComboUI();updatePUBar();
