@@ -24,6 +24,11 @@
 
   <!-- MAIN MENU -->
   <div id="menuScreen" class="screen">
+    <!-- Top corner buttons -->
+    <div class="menu-top-bar">
+      <button class="menu-corner-btn" id="btnMissions">📋</button>
+      <button class="menu-corner-btn" id="btnProfile">👤</button>
+    </div>
     <div class="menu-content">
       <div class="menu-cat" id="menuCat"><canvas id="catCanvas3D" width="400" height="400"></canvas></div>
       <h1 class="menu-title">Flappy Cat</h1>
@@ -33,14 +38,11 @@
       <div class="menu-streak" id="menuStreak"></div>
       <div class="menu-buttons">
         <button class="btn btn-play" id="btnPlay">🎮 Chơi</button>
-        <button class="btn btn-modes" id="btnModes">🎪 Chế độ</button>
         <button class="btn btn-history" id="btnHistory">📜 Lịch sử</button>
         <button class="btn btn-skins" id="btnSkins">🎨 Skins</button>
         <button class="btn btn-leaderboard" id="btnLeaderboard">🏆 Xếp hạng</button>
-        <button class="btn btn-missions" id="btnMissions">📋 Nhiệm vụ</button>
         <button class="btn btn-settings" id="btnSettings">⚙️ Cài đặt</button>
         <button class="btn btn-achievements" id="btnAchievements">🏆 Thành tích</button>
-        <button class="btn btn-profile" id="btnProfile">👤 Hồ sơ</button>
       </div>
     </div>
   </div>
@@ -1207,8 +1209,9 @@ function renderModes(){
         return;
       }
       currentMode=mode;
-      renderModes();
-      showToast('🎪','Đã chọn chế độ!',modeData.name,2000);
+      showScreen(null);
+      document.getElementById('hud').classList.remove('hidden');
+      startGame();
     };
   });
 }

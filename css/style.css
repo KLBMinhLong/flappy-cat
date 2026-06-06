@@ -134,7 +134,7 @@ canvas {
   background: linear-gradient(180deg, #1a0533 0%, #2d1b69 40%, #4a2c8a 70%, #7b3fa0 100%);
   align-items: center;
   justify-content: center;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .menu-content {
@@ -150,6 +150,14 @@ canvas {
   -webkit-overflow-scrolling: touch;
 }
 
+.menu-content::-webkit-scrollbar {
+  display: none;
+}
+.menu-content {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
@@ -163,6 +171,46 @@ canvas {
   height: 180px;
   margin: 0 auto;
   flex-shrink: 0;
+}
+
+/* Menu top corner buttons */
+.menu-top-bar {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.menu-corner-btn {
+  pointer-events: auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  color: white;
+}
+
+.menu-corner-btn:hover {
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.4);
+  transform: scale(1.1);
+}
+
+.menu-corner-btn:active {
+  transform: scale(0.95);
 }
 
 #catCanvas3D {
@@ -202,12 +250,13 @@ canvas {
 .menu-title {
   font-size: 42px;
   font-weight: 900;
-  background: linear-gradient(135deg, #ff96c8, #ff69b4, #ffb6d9);
+  background: linear-gradient(135deg, #ffb6d9, #ff69b4, #ff96c8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-shadow: none;
   letter-spacing: 2px;
+  filter: drop-shadow(0 2px 8px rgba(255,105,180,0.4));
 }
 
 .menu-subtitle {
