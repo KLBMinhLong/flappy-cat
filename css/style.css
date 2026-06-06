@@ -170,9 +170,35 @@ canvas {
 }
 
 .menu-cat {
-  font-size: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   animation: catBounce 2s ease-in-out infinite;
   filter: drop-shadow(0 5px 15px rgba(255,150,200,0.4));
+}
+
+.menu-cat-svg {
+  overflow: visible;
+}
+
+.menu-cat-svg .ear-l {
+  animation: earWiggleL 3s ease-in-out infinite;
+  transform-origin: 30px 30px;
+}
+
+.menu-cat-svg .ear-r {
+  animation: earWiggleR 3s ease-in-out infinite;
+  transform-origin: 90px 30px;
+}
+
+@keyframes earWiggleL {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-8deg); }
+}
+
+@keyframes earWiggleR {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(8deg); }
 }
 
 @keyframes catBounce {

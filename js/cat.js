@@ -32,11 +32,179 @@ export function update() {
   if (cat.flapAnim > 0) cat.flapAnim -= 0.1;
 }
 
+// ==================== DRAW HELPERS ====================
+function drawCatShape(ctx, sz, skin, getColor, now) {
+  const hx = sz * 0.15;   // head center X
+  const hy = -sz * 0.25;  // head center Y
+  const hr = sz * 0.35;   // head radius
+
+  // === TAIL ===
+  ctx.strokeStyle = getColor(skin.bodyColor);
+  ctx.lineWidth = 3.5;
+  ctx.lineCap = 'round';
+  const tw = Math.sin(now * 0.008) * 0.3;
+  ctx.beginPath();
+  ctx.moveTo(-sz * 0.45, 0);
+  ctx.quadraticCurveTo(-sz * 0.7, -sz * 0.25 + tw * 15, -sz * 0.6, -sz * 0.5 + tw * 10);
+  ctx.stroke();
+
+  // === BODY ===
+  ctx.fillStyle = getColor(skin.bodyColor);
+  ctx.beginPath();
+  ctx.ellipse(0, 0, sz * 0.55, sz * 0.45, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // === PAWS (small bumps at bottom) ===
+  ctx.fillStyle = getColor(skin.bodyColor);
+  [-0.2, 0.15].forEach(px => {
+    ctx.beginPath();
+    ctx.ellipse(sz * px, sz * 0.4, sz * 0.12, sz * 0.08, 0, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // === LEFT EAR (outer) ===
+  ctx.fillStyle = getColor(skin.earColor);
+  ctx.beginPath();
+  ctx.moveTo(hx - hr * 0.75, hy - hr * 0.1);
+  ctx.lineTo(hx - hr * 0.35, hy - hr * 1.15);
+  ctx.lineTo(hx + hr * 0.15, hy - hr * 0.45);
+  ctx.closePath();
+  ctx.fill();
+
+  // === RIGHT EAR (outer) ===
+  ctx.beginPath();
+  ctx.moveTo(hx + hr * 0.75, hy - hr * 0.1);
+  ctx.lineTo(hx + hr * 0.35, hy - hr * 1.15);
+  ctx.lineTo(hx - hr * 0.15, hy - hr * 0.45);
+  ctx.closePath();
+  ctx.fill();
+
+  // === LEFT EAR (inner) ===
+  ctx.fillStyle = getColor(skin.innerEar);
+  ctx.beginPath();
+  ctx.moveTo(hx - hr * 0.55, hy - hr * 0.15);
+  ctx.lineTo(hx - hr * 0.28, hy - hr * 0.9);
+  ctx.lineTo(hx + hr * 0.08, hy - hr * 0.45);
+  ctx.closePath();
+  ctx.fill();
+
+  // === RIGHT EAR (inner) ===
+  ctx.beginPath();
+  ctx.moveTo(hx + hr * 0.55, hy - hr * 0.15);
+  ctx.lineTo(hx + hr * 0.28, hy - hr * 0.9);
+  ctx.lineTo(hx - hr * 0.08, hy - hr * 0.45);
+  ctx.closePath();
+  ctx.fill();
+
+  // === HEAD ===
+  ctx.fillStyle = getColor(skin.headColor);
+  ctx.beginPath();
+  ctx.arc(hx, hy, hr, 0, Math.PI * 2);
+  ctx.fill();
+
+  // === CHEEKS (fluffy) ===
+  ctx.fillStyle = getColor(skin.headColor);
+  ctx.beginPath();
+  ctx.ellipse(hx - hr * 0.65, hy + hr * 0.35, hr * 0.35, hr * 0.28, -0.2, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(hx + hr * 0.65, hy + hr * 0.35, hr * 0.35, hr * 0.28, 0.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  // === EYES ===
+  const blink = Math.sin(now * 0.005) > 0.95 ? 0.15 : 1;
+  const eyeR = hr * 0.28;
+  const eyeY = hy - hr * 0.08;
+
+  // Left eye
+  ctx.fillStyle = skin.eyeColor;
+  ctx.beginPath();
+  ctx.ellipse(hx - hr * 0.3, eyeY, eyeR, eyeR * blink, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Right eye
+  ctx.beginPath();
+  ctx.ellipse(hx + hr * 0.3, eyeY, eyeR, eyeR * blink, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Eye shine (big)
+  if (skin.id !== 'ghost') {
+    ctx.fillStyle = 'white';
+    const shineR = eyeR * 0.45;
+    ctx.beginPath();
+    ctx.arc(hx - hr * 0.22, eyeY - eyeR * 0.25, shineR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(hx + hr * 0.38, eyeY - eyeR * 0.25, shineR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Eye shine (small)
+    const shineR2 = eyeR * 0.2;
+    ctx.beginPath();
+    ctx.arc(hx - hr * 0.35, eyeY + eyeR * 0.15, shineR2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(hx + hr * 0.33, eyeY + eyeR * 0.15, shineR2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // === NOSE (inverted triangle) ===
+  const noseY = hy + hr * 0.15;
+  ctx.fillStyle = getColor(skin.noseColor);
+  ctx.beginPath();
+  ctx.moveTo(hx, noseY - hr * 0.08);
+  ctx.lineTo(hx - hr * 0.1, noseY + hr * 0.06);
+  ctx.lineTo(hx + hr * 0.1, noseY + hr * 0.06);
+  ctx.closePath();
+  ctx.fill();
+
+  // === MOUTH (cat W-shape) ===
+  ctx.strokeStyle = getColor(skin.noseColor);
+  ctx.lineWidth = 1.5;
+  ctx.lineCap = 'round';
+  const mY = noseY + hr * 0.08;
+  ctx.beginPath();
+  ctx.moveTo(hx - hr * 0.2, mY + hr * 0.12);
+  ctx.quadraticCurveTo(hx - hr * 0.1, mY, hx, mY + hr * 0.06);
+  ctx.quadraticCurveTo(hx + hr * 0.1, mY, hx + hr * 0.2, mY + hr * 0.12);
+  ctx.stroke();
+
+  // === WHISKERS ===
+  ctx.strokeStyle = getColor(skin.noseColor);
+  ctx.lineWidth = 1;
+  ctx.globalAlpha = 0.6;
+  const wY = noseY + hr * 0.05;
+  // Left whiskers
+  [[-0.9, -0.15], [-0.95, 0.05], [-0.85, 0.25]].forEach(([wx, wy]) => {
+    ctx.beginPath();
+    ctx.moveTo(hx - hr * 0.15, wY + hr * wy);
+    ctx.lineTo(hx + hr * wx, wY + hr * wy - hr * 0.05);
+    ctx.stroke();
+  });
+  // Right whiskers
+  [[0.9, -0.15], [0.95, 0.05], [0.85, 0.25]].forEach(([wx, wy]) => {
+    ctx.beginPath();
+    ctx.moveTo(hx + hr * 0.15, wY + hr * wy);
+    ctx.lineTo(hx + hr * wx, wY + hr * wy - hr * 0.05);
+    ctx.stroke();
+  });
+  ctx.globalAlpha = 1;
+
+  // === BLUSH ===
+  ctx.fillStyle = 'rgba(255,150,180,0.25)';
+  ctx.beginPath();
+  ctx.ellipse(hx - hr * 0.55, hy + hr * 0.3, hr * 0.2, hr * 0.12, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(hx + hr * 0.55, hy + hr * 0.3, hr * 0.2, hr * 0.12, 0, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// ==================== MAIN DRAW ====================
 export function draw(invincibleTimer = 0, activeShield = 0) {
   const ctx = getCtx();
   const skin = Skins.getSelected();
   const now = performance.now();
-  const tiny = false; // handled by powerups externally
   const sz = SIZE;
 
   ctx.save();
@@ -68,12 +236,6 @@ export function draw(invincibleTimer = 0, activeShield = 0) {
     return base;
   };
 
-  // Body
-  ctx.fillStyle = getColor(skin.bodyColor);
-  ctx.beginPath();
-  ctx.ellipse(0, 0, sz * 0.55, sz * 0.45, 0, 0, Math.PI * 2);
-  ctx.fill();
-
   // Wings (when going up)
   if (cat.vy < -1) {
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
@@ -83,82 +245,13 @@ export function draw(invincibleTimer = 0, activeShield = 0) {
     ctx.fill();
   }
 
-  // Head
-  ctx.fillStyle = getColor(skin.headColor);
-  ctx.beginPath();
-  ctx.arc(sz * 0.25, -sz * 0.18, sz * 0.32, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Ears
-  ctx.fillStyle = getColor(skin.earColor);
-  [[0.08, -0.42, 0.03, -0.7, 0.25, -0.46], [0.32, -0.42, 0.42, -0.7, 0.48, -0.42]].forEach(e => {
-    ctx.beginPath();
-    ctx.moveTo(sz * e[0], sz * e[1]);
-    ctx.lineTo(sz * e[2], sz * e[3]);
-    ctx.lineTo(sz * e[4], sz * e[5]);
-    ctx.fill();
-  });
-
-  // Inner ears
-  ctx.fillStyle = getColor(skin.innerEar);
-  [[0.1, -0.44, 0.08, -0.62, 0.23, -0.47], [0.34, -0.44, 0.41, -0.62, 0.46, -0.44]].forEach(e => {
-    ctx.beginPath();
-    ctx.moveTo(sz * e[0], sz * e[1]);
-    ctx.lineTo(sz * e[2], sz * e[3]);
-    ctx.lineTo(sz * e[4], sz * e[5]);
-    ctx.fill();
-  });
-
-  // Eyes
-  const blink = Math.sin(now * 0.005) > 0.95 ? 0.1 : 1;
-  ctx.fillStyle = skin.eyeColor;
-  [0.17, 0.35].forEach(ex => {
-    ctx.beginPath();
-    ctx.ellipse(sz * ex, -sz * 0.22, 3, 4 * blink, 0, 0, Math.PI * 2);
-    ctx.fill();
-  });
-
-  // Eye shine
-  if (skin.id !== 'ghost') {
-    ctx.fillStyle = 'white';
-    [0.19, 0.37].forEach(ex => {
-      ctx.beginPath();
-      ctx.arc(sz * ex, -sz * 0.25, 1.5, 0, Math.PI * 2);
-      ctx.fill();
-    });
-  }
-
-  // Nose
-  ctx.fillStyle = getColor(skin.noseColor);
-  ctx.beginPath();
-  ctx.arc(sz * 0.26, -sz * 0.1, 2, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Mouth
-  ctx.strokeStyle = getColor(skin.noseColor);
-  ctx.lineWidth = 1.2;
-  ctx.beginPath();
-  ctx.arc(sz * 0.22, -sz * 0.05, 3, 0, Math.PI * 0.7);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(sz * 0.3, -sz * 0.05, 3, Math.PI * 0.3, Math.PI);
-  ctx.stroke();
-
-  // Tail
-  ctx.strokeStyle = getColor(skin.bodyColor);
-  ctx.lineWidth = 3.5;
-  ctx.lineCap = 'round';
-  const tw = Math.sin(now * 0.008) * 0.3;
-  ctx.beginPath();
-  ctx.moveTo(-sz * 0.45, 0);
-  ctx.quadraticCurveTo(-sz * 0.7, -sz * 0.25 + tw * 15, -sz * 0.6, -sz * 0.5 + tw * 10);
-  ctx.stroke();
+  drawCatShape(ctx, sz, skin, getColor, now);
 
   ctx.restore();
   ctx.globalAlpha = 1;
 }
 
-// Draw preview of a specific skin (for skin selection screen)
+// ==================== SKIN PREVIEW DRAW ====================
 export function drawPreview(ctx, skin, cx, cy, size) {
   const now = performance.now();
   const sz = size;
@@ -173,70 +266,6 @@ export function drawPreview(ctx, skin, cx, cy, size) {
 
   ctx.save();
   ctx.translate(cx, cy);
-
-  // Body
-  ctx.fillStyle = getColor(skin.bodyColor);
-  ctx.beginPath();
-  ctx.ellipse(0, 0, sz * 0.55, sz * 0.45, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Head
-  ctx.fillStyle = getColor(skin.headColor);
-  ctx.beginPath();
-  ctx.arc(sz * 0.25, -sz * 0.18, sz * 0.32, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Ears
-  ctx.fillStyle = getColor(skin.earColor);
-  [[0.08, -0.42, 0.03, -0.7, 0.25, -0.46], [0.32, -0.42, 0.42, -0.7, 0.48, -0.42]].forEach(e => {
-    ctx.beginPath();
-    ctx.moveTo(sz * e[0], sz * e[1]);
-    ctx.lineTo(sz * e[2], sz * e[3]);
-    ctx.lineTo(sz * e[4], sz * e[5]);
-    ctx.fill();
-  });
-
-  // Inner ears
-  ctx.fillStyle = getColor(skin.innerEar);
-  [[0.1, -0.44, 0.08, -0.62, 0.23, -0.47], [0.34, -0.44, 0.41, -0.62, 0.46, -0.44]].forEach(e => {
-    ctx.beginPath();
-    ctx.moveTo(sz * e[0], sz * e[1]);
-    ctx.lineTo(sz * e[2], sz * e[3]);
-    ctx.lineTo(sz * e[4], sz * e[5]);
-    ctx.fill();
-  });
-
-  // Eyes
-  ctx.fillStyle = skin.eyeColor;
-  [0.17, 0.35].forEach(ex => {
-    ctx.beginPath();
-    ctx.ellipse(sz * ex, -sz * 0.22, 3, 4, 0, 0, Math.PI * 2);
-    ctx.fill();
-  });
-
-  if (skin.id !== 'ghost') {
-    ctx.fillStyle = 'white';
-    [0.19, 0.37].forEach(ex => {
-      ctx.beginPath();
-      ctx.arc(sz * ex, -sz * 0.25, 1.5, 0, Math.PI * 2);
-      ctx.fill();
-    });
-  }
-
-  // Nose
-  ctx.fillStyle = getColor(skin.noseColor);
-  ctx.beginPath();
-  ctx.arc(sz * 0.26, -sz * 0.1, 2.5, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Tail
-  ctx.strokeStyle = getColor(skin.bodyColor);
-  ctx.lineWidth = 3;
-  ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(-sz * 0.45, 0);
-  ctx.quadraticCurveTo(-sz * 0.7, -sz * 0.3, -sz * 0.6, -sz * 0.55);
-  ctx.stroke();
-
+  drawCatShape(ctx, sz, skin, getColor, now);
   ctx.restore();
 }

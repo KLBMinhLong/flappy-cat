@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -24,7 +24,7 @@
   <!-- MAIN MENU -->
   <div id="menuScreen" class="screen">
     <div class="menu-content">
-      <div class="menu-cat">🐱</div>
+      <div class="menu-cat" id="menuCat"><svg viewBox="0 0 120 120" width="120" height="120" class="menu-cat-svg"><polygon points="22,38 8,4 42,28" fill="#ff96c8" class="ear-l"/><polygon points="98,28 112,4 82,38" fill="#ff96c8" class="ear-r"/><polygon points="26,35 14,12 40,30" fill="#ff69b4"/><polygon points="94,30 106,12 78,35" fill="#ff69b4"/><circle cx="60" cy="65" r="40" fill="#ffb6d9"/><ellipse cx="38" cy="52" rx="7" ry="9" fill="#333"/><ellipse cx="82" cy="52" rx="7" ry="9" fill="#333"/><circle cx="41" cy="49" r="3.5" fill="white"/><circle cx="85" cy="49" r="3.5" fill="white"/><circle cx="38" cy="53" r="1.2" fill="white"/><circle cx="82" cy="53" r="1.2" fill="white"/><polygon points="60,62 56,68 64,68" fill="#ff69b4"/><path d="M50 72 Q60 82 70 72" stroke="#ff69b4" stroke-width="2.5" fill="none" stroke-linecap="round"/><line x1="8" y1="60" x2="28" y2="64" stroke="#333" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/><line x1="5" y1="68" x2="28" y2="68" stroke="#333" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/><line x1="8" y1="76" x2="28" y2="72" stroke="#333" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/><line x1="112" y1="60" x2="92" y2="64" stroke="#333" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/><line x1="115" y1="68" x2="92" y2="68" stroke="#333" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/><line x1="112" y1="76" x2="92" y2="72" stroke="#333" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/><ellipse cx="32" cy="70" rx="9" ry="5" fill="rgba(255,150,180,0.35)"/><ellipse cx="88" cy="70" rx="9" ry="5" fill="rgba(255,150,180,0.35)"/><ellipse cx="35" cy="45" rx="12" ry="8" fill="#ffb6d9"/><ellipse cx="85" cy="45" rx="12" ry="8" fill="#ffb6d9"/></svg></div>
       <h1 class="menu-title">Flappy Cat</h1>
       <p class="menu-subtitle">Tap · Fly · Survive</p>
       <div class="menu-highscore" id="menuHighscore">Best: 0</div>
@@ -608,40 +608,65 @@ function drawPipe(p,th){
 function drawCat(){
   const now=performance.now(),skin=getSkin(),sz=catSz();
   const tiny=activeTiny>0?0.65:1;const tsz=sz*tiny;
+  const hx=tsz*0.15,hy=-tsz*0.25,hr=tsz*0.35;
   ctx.save();ctx.translate(cat.x,cat.y);ctx.rotate(cat.rot);
   if(invincibleTimer>0&&Math.floor(invincibleTimer/80)%2===0)ctx.globalAlpha=0.5;
-  if(activeShield>0||invincibleTimer>0){
-    ctx.strokeStyle='rgba(100,200,255,0.6)';ctx.lineWidth=3;
-    ctx.beginPath();ctx.arc(0,0,tsz+8,0,Math.PI*2);ctx.stroke();
-    ctx.fillStyle='rgba(100,200,255,0.1)';ctx.fill();
-  }
+  if(activeShield>0||invincibleTimer>0){ctx.strokeStyle='rgba(100,200,255,0.6)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(0,0,tsz+8,0,Math.PI*2);ctx.stroke();ctx.fillStyle='rgba(100,200,255,0.1)';ctx.fill();}
   const sc=c=>skinColor(c);
-  // body
-  ctx.fillStyle=sc(skin.body);ctx.beginPath();ctx.ellipse(0,0,tsz*0.55,tsz*0.45,0,0,Math.PI*2);ctx.fill();
-  // wings
-  if(cat.vy<-1){ctx.fillStyle='rgba(255,255,255,0.4)';const wf=Math.sin(now*0.02)*8;ctx.beginPath();ctx.ellipse(-2,-tsz*0.3-wf,tsz*0.35,tsz*0.15,-0.3,0,Math.PI*2);ctx.fill();}
-  // head
-  ctx.fillStyle=sc(skin.head);ctx.beginPath();ctx.arc(tsz*0.25,-tsz*0.18,tsz*0.32,0,Math.PI*2);ctx.fill();
-  // ears
-  ctx.fillStyle=sc(skin.ear);
-  [[0.08,-0.42,0.03,-0.7,0.25,-0.46],[0.32,-0.42,0.42,-0.7,0.48,-0.42]].forEach(e=>{ctx.beginPath();ctx.moveTo(tsz*e[0],tsz*e[1]);ctx.lineTo(tsz*e[2],tsz*e[3]);ctx.lineTo(tsz*e[4],tsz*e[5]);ctx.fill();});
-  ctx.fillStyle=sc(skin.inner);
-  [[0.1,-0.44,0.08,-0.62,0.23,-0.47],[0.34,-0.44,0.41,-0.62,0.46,-0.44]].forEach(e=>{ctx.beginPath();ctx.moveTo(tsz*e[0],tsz*e[1]);ctx.lineTo(tsz*e[2],tsz*e[3]);ctx.lineTo(tsz*e[4],tsz*e[5]);ctx.fill();});
-  // eyes
-  const blink=Math.sin(now*0.005)>0.95?0.1:1;
-  ctx.fillStyle=skin.eye;
-  [0.17,0.35].forEach(ex=>{ctx.beginPath();ctx.ellipse(tsz*ex,-tsz*0.22,3*tiny,4*tiny*blink,0,0,Math.PI*2);ctx.fill();});
-  if(skin.id!=='ghost'){ctx.fillStyle='white';[0.19,0.37].forEach(ex=>{ctx.beginPath();ctx.arc(tsz*ex,-tsz*0.25,1.5*tiny,0,Math.PI*2);ctx.fill();});}
-  // nose
-  ctx.fillStyle=sc(skin.nose);ctx.beginPath();ctx.arc(tsz*0.26,-tsz*0.1,2*tiny,0,Math.PI*2);ctx.fill();
-  // mouth
-  ctx.strokeStyle=sc(skin.nose);ctx.lineWidth=1.2;
-  ctx.beginPath();ctx.arc(tsz*0.22,-tsz*0.05,3*tiny,0,Math.PI*0.7);ctx.stroke();
-  ctx.beginPath();ctx.arc(tsz*0.3,-tsz*0.05,3*tiny,Math.PI*0.3,Math.PI);ctx.stroke();
   // tail
-  ctx.strokeStyle=sc(skin.body);ctx.lineWidth=3.5;ctx.lineCap='round';
+  ctx.strokeStyle=sc(skin.body);ctx.lineWidth=3.5*tiny;ctx.lineCap='round';
   const tw=Math.sin(now*0.008)*0.3;
   ctx.beginPath();ctx.moveTo(-tsz*0.45,0);ctx.quadraticCurveTo(-tsz*0.7,-tsz*0.25+tw*15,-tsz*0.6,-tsz*0.5+tw*10);ctx.stroke();
+  // body
+  ctx.fillStyle=sc(skin.body);ctx.beginPath();ctx.ellipse(0,0,tsz*0.55,tsz*0.45,0,0,Math.PI*2);ctx.fill();
+  // paws
+  ctx.fillStyle=sc(skin.body);[-0.2,0.15].forEach(px=>{ctx.beginPath();ctx.ellipse(tsz*px,tsz*0.4,tsz*0.12,tsz*0.08,0,0,Math.PI*2);ctx.fill();});
+  // left ear outer
+  ctx.fillStyle=sc(skin.ear);
+  ctx.beginPath();ctx.moveTo(hx-hr*0.75,hy-hr*0.1);ctx.lineTo(hx-hr*0.35,hy-hr*1.15);ctx.lineTo(hx+hr*0.15,hy-hr*0.45);ctx.closePath();ctx.fill();
+  // right ear outer
+  ctx.beginPath();ctx.moveTo(hx+hr*0.75,hy-hr*0.1);ctx.lineTo(hx+hr*0.35,hy-hr*1.15);ctx.lineTo(hx-hr*0.15,hy-hr*0.45);ctx.closePath();ctx.fill();
+  // left ear inner
+  ctx.fillStyle=sc(skin.inner);
+  ctx.beginPath();ctx.moveTo(hx-hr*0.55,hy-hr*0.15);ctx.lineTo(hx-hr*0.28,hy-hr*0.9);ctx.lineTo(hx+hr*0.08,hy-hr*0.45);ctx.closePath();ctx.fill();
+  // right ear inner
+  ctx.beginPath();ctx.moveTo(hx+hr*0.55,hy-hr*0.15);ctx.lineTo(hx+hr*0.28,hy-hr*0.9);ctx.lineTo(hx-hr*0.08,hy-hr*0.45);ctx.closePath();ctx.fill();
+  // head
+  ctx.fillStyle=sc(skin.head);ctx.beginPath();ctx.arc(hx,hy,hr,0,Math.PI*2);ctx.fill();
+  // cheeks
+  ctx.fillStyle=sc(skin.head);
+  ctx.beginPath();ctx.ellipse(hx-hr*0.65,hy+hr*0.35,hr*0.35,hr*0.28,-0.2,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(hx+hr*0.65,hy+hr*0.35,hr*0.35,hr*0.28,0.2,0,Math.PI*2);ctx.fill();
+  // eyes
+  const blink=Math.sin(now*0.005)>0.95?0.15:1;const eyeR=hr*0.28;const eyeY=hy-hr*0.08;
+  ctx.fillStyle=skin.eye;
+  ctx.beginPath();ctx.ellipse(hx-hr*0.3,eyeY,eyeR,eyeR*blink,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(hx+hr*0.3,eyeY,eyeR,eyeR*blink,0,0,Math.PI*2);ctx.fill();
+  if(skin.id!=='ghost'){
+    ctx.fillStyle='white';const sr=eyeR*0.45;
+    ctx.beginPath();ctx.arc(hx-hr*0.22,eyeY-eyeR*0.25,sr,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(hx+hr*0.38,eyeY-eyeR*0.25,sr,0,Math.PI*2);ctx.fill();
+    const sr2=eyeR*0.2;
+    ctx.beginPath();ctx.arc(hx-hr*0.35,eyeY+eyeR*0.15,sr2,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(hx+hr*0.33,eyeY+eyeR*0.15,sr2,0,Math.PI*2);ctx.fill();
+  }
+  // nose (triangle)
+  const noseY=hy+hr*0.15;
+  ctx.fillStyle=sc(skin.nose);ctx.beginPath();ctx.moveTo(hx,noseY-hr*0.08);ctx.lineTo(hx-hr*0.1,noseY+hr*0.06);ctx.lineTo(hx+hr*0.1,noseY+hr*0.06);ctx.closePath();ctx.fill();
+  // mouth
+  ctx.strokeStyle=sc(skin.nose);ctx.lineWidth=1.5*tiny;ctx.lineCap='round';
+  const mY=noseY+hr*0.08;
+  ctx.beginPath();ctx.moveTo(hx-hr*0.2,mY+hr*0.12);ctx.quadraticCurveTo(hx-hr*0.1,mY,hx,mY+hr*0.06);ctx.quadraticCurveTo(hx+hr*0.1,mY,hx+hr*0.2,mY+hr*0.12);ctx.stroke();
+  // whiskers
+  ctx.strokeStyle=sc(skin.nose);ctx.lineWidth=1*tiny;ctx.globalAlpha=0.6;
+  const wY=noseY+hr*0.05;
+  [[-0.9,-0.15],[-0.95,0.05],[-0.85,0.25]].forEach(([wx,wy])=>{ctx.beginPath();ctx.moveTo(hx-hr*0.15,wY+hr*wy);ctx.lineTo(hx+hr*wx,wY+hr*wy-hr*0.05);ctx.stroke();});
+  [[0.9,-0.15],[0.95,0.05],[0.85,0.25]].forEach(([wx,wy])=>{ctx.beginPath();ctx.moveTo(hx+hr*0.15,wY+hr*wy);ctx.lineTo(hx+hr*wx,wY+hr*wy-hr*0.05);ctx.stroke();});
+  ctx.globalAlpha=1;
+  // blush
+  ctx.fillStyle='rgba(255,150,180,0.25)';
+  ctx.beginPath();ctx.ellipse(hx-hr*0.55,hy+hr*0.3,hr*0.2,hr*0.12,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(hx+hr*0.55,hy+hr*0.3,hr*0.2,hr*0.12,0,0,Math.PI*2);ctx.fill();
   ctx.restore();ctx.globalAlpha=1;
 }
 
@@ -799,12 +824,12 @@ gte80:[
 };
 // ==================== SVG CAT FACES ====================
 const CAT_FACES={
-trash:`<svg viewBox="0 0 64 64" width="48" height="48"><circle cx="32" cy="34" r="24" fill="#ffb3b3"/><circle cx="32" cy="34" r="20" fill="#ff6b6b"/><ellipse cx="14" cy="16" rx="8" ry="14" fill="#ff6b6b" transform="rotate(-15 14 16)"/><ellipse cx="50" cy="16" rx="8" ry="14" fill="#ff6b6b" transform="rotate(15 50 16)"/><ellipse cx="14" cy="16" rx="5" ry="10" fill="#ffb3b3" transform="rotate(-15 14 16)"/><ellipse cx="50" cy="16" rx="5" ry="10" fill="#ffb3b3" transform="rotate(15 50 16)"/><circle cx="24" cy="32" r="4" fill="#1a1a2e"/><circle cx="40" cy="32" r="4" fill="#1a1a2e"/><circle cx="25.5" cy="30.5" r="1.5" fill="white"/><circle cx="41.5" cy="30.5" r="1.5" fill="white"/><ellipse cx="32" cy="42" rx="3" ry="2" fill="#1a1a2e"/><path d="M22 46 Q32 40 42 46" stroke="#1a1a2e" stroke-width="2" fill="none"/><line x1="8" y1="36" x2="16" y2="34" stroke="#1a1a2e" stroke-width="1.5"/><line x1="8" y1="40" x2="16" y2="40" stroke="#1a1a2e" stroke-width="1.5"/><line x1="48" y1="34" x2="56" y2="36" stroke="#1a1a2e" stroke-width="1.5"/><line x1="48" y1="40" x2="56" y2="40" stroke="#1a1a2e" stroke-width="1.5"/><ellipse cx="22" cy="38" rx="5" ry="3" fill="rgba(255,100,100,0.3)"/><ellipse cx="42" cy="38" rx="5" ry="3" fill="rgba(255,100,100,0.3)"/></svg>`,
-tease:`<svg viewBox="0 0 64 64" width="48" height="48"><circle cx="32" cy="34" r="24" fill="#ffe0b2"/><circle cx="32" cy="34" r="20" fill="#ffb347"/><ellipse cx="14" cy="16" rx="8" ry="14" fill="#ffb347" transform="rotate(-15 14 16)"/><ellipse cx="50" cy="16" rx="8" ry="14" fill="#ffb347" transform="rotate(15 50 16)"/><ellipse cx="14" cy="16" rx="5" ry="10" fill="#ffe0b2" transform="rotate(-15 14 16)"/><ellipse cx="50" cy="16" rx="5" ry="10" fill="#ffe0b2" transform="rotate(15 50 16)"/><ellipse cx="24" cy="32" rx="4" ry="3" fill="#1a1a2e"/><ellipse cx="40" cy="30" rx="4" ry="5" fill="#1a1a2e"/><circle cx="25.5" cy="31" r="1.5" fill="white"/><circle cx="41.5" cy="28.5" r="1.5" fill="white"/><ellipse cx="32" cy="42" rx="3" ry="2" fill="#1a1a2e"/><path d="M24 45 Q32 50 40 45" stroke="#1a1a2e" stroke-width="2" fill="none"/><line x1="8" y1="36" x2="16" y2="34" stroke="#1a1a2e" stroke-width="1.5"/><line x1="48" y1="34" x2="56" y2="36" stroke="#1a1a2e" stroke-width="1.5"/><ellipse cx="22" cy="38" rx="5" ry="3" fill="rgba(255,180,100,0.3)"/><ellipse cx="42" cy="38" rx="5" ry="3" fill="rgba(255,180,100,0.3)"/></svg>`,
-mid:`<svg viewBox="0 0 64 64" width="48" height="48"><circle cx="32" cy="34" r="24" fill="#e0e0e0"/><circle cx="32" cy="34" r="20" fill="#bdbdbd"/><ellipse cx="14" cy="16" rx="8" ry="14" fill="#bdbdbd" transform="rotate(-15 14 16)"/><ellipse cx="50" cy="16" rx="8" ry="14" fill="#bdbdbd" transform="rotate(15 50 16)"/><ellipse cx="14" cy="16" rx="5" ry="10" fill="#e0e0e0" transform="rotate(-15 14 16)"/><ellipse cx="50" cy="16" rx="5" ry="10" fill="#e0e0e0" transform="rotate(15 50 16)"/><circle cx="24" cy="32" r="3.5" fill="#1a1a2e"/><circle cx="40" cy="32" r="3.5" fill="#1a1a2e"/><circle cx="25" cy="31" r="1.5" fill="white"/><circle cx="41" cy="31" r="1.5" fill="white"/><ellipse cx="32" cy="42" rx="3" ry="2" fill="#1a1a2e"/><line x1="26" y1="46" x2="38" y2="46" stroke="#1a1a2e" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="36" x2="16" y2="35" stroke="#1a1a2e" stroke-width="1.5"/><line x1="48" y1="35" x2="56" y2="36" stroke="#1a1a2e" stroke-width="1.5"/><ellipse cx="22" cy="38" rx="5" ry="3" fill="rgba(255,150,200,0.2)"/><ellipse cx="42" cy="38" rx="5" ry="3" fill="rgba(255,150,200,0.2)"/></svg>`,
-good:`<svg viewBox="0 0 64 64" width="48" height="48"><circle cx="32" cy="34" r="24" fill="#c8e6c9"/><circle cx="32" cy="34" r="20" fill="#81c784"/><ellipse cx="14" cy="16" rx="8" ry="14" fill="#81c784" transform="rotate(-15 14 16)"/><ellipse cx="50" cy="16" rx="8" ry="14" fill="#81c784" transform="rotate(15 50 16)"/><ellipse cx="14" cy="16" rx="5" ry="10" fill="#c8e6c9" transform="rotate(-15 14 16)"/><ellipse cx="50" cy="16" rx="5" ry="10" fill="#c8e6c9" transform="rotate(15 50 16)"/><path d="M20 30 Q24 26 28 30" stroke="#1a1a2e" stroke-width="2.5" fill="none"/><path d="M36 30 Q40 26 44 30" stroke="#1a1a2e" stroke-width="2.5" fill="none"/><circle cx="24" cy="33" r="1" fill="#1a1a2e"/><circle cx="40" cy="33" r="1" fill="#1a1a2e"/><ellipse cx="32" cy="42" rx="3" ry="2" fill="#1a1a2e"/><path d="M24 45 Q32 52 40 45" stroke="#1a1a2e" stroke-width="2" fill="none"/><line x1="8" y1="36" x2="16" y2="34" stroke="#1a1a2e" stroke-width="1.5"/><line x1="48" y1="34" x2="56" y2="36" stroke="#1a1a2e" stroke-width="1.5"/><ellipse cx="22" cy="38" rx="5" ry="3" fill="rgba(255,150,200,0.3)"/><ellipse cx="42" cy="38" rx="5" ry="3" fill="rgba(255,150,200,0.3)"/></svg>`,
-pro:`<svg viewBox="0 0 64 64" width="48" height="48"><circle cx="32" cy="34" r="24" fill="#bbdefb"/><circle cx="32" cy="34" r="20" fill="#64b5f6"/><ellipse cx="14" cy="16" rx="8" ry="14" fill="#64b5f6" transform="rotate(-15 14 16)"/><ellipse cx="50" cy="16" rx="8" ry="14" fill="#64b5f6" transform="rotate(15 50 16)"/><ellipse cx="14" cy="16" rx="5" ry="10" fill="#bbdefb" transform="rotate(-15 14 16)"/><ellipse cx="50" cy="16" rx="5" ry="10" fill="#bbdefb" transform="rotate(15 50 16)"/><circle cx="24" cy="30" r="4" fill="#1a1a2e"/><circle cx="40" cy="30" r="4" fill="#1a1a2e"/><circle cx="25.5" cy="28.5" r="2" fill="white"/><circle cx="41.5" cy="28.5" r="2" fill="white"/><circle cx="24.5" cy="29.5" r="0.8" fill="white"/><circle cx="40.5" cy="29.5" r="0.8" fill="white"/><ellipse cx="32" cy="40" rx="3" ry="2" fill="#1a1a2e"/><path d="M22 44 Q32 54 42 44" stroke="#1a1a2e" stroke-width="2" fill="none"/><line x1="8" y1="36" x2="16" y2="34" stroke="#1a1a2e" stroke-width="1.5"/><line x1="48" y1="34" x2="56" y2="36" stroke="#1a1a2e" stroke-width="1.5"/><ellipse cx="22" cy="38" rx="6" ry="4" fill="rgba(255,150,200,0.4)"/><ellipse cx="42" cy="38" rx="6" ry="4" fill="rgba(255,150,200,0.4)"/><path d="M16 22 L20 18" stroke="#ffd700" stroke-width="2"/><path d="M24 20 L24 14" stroke="#ffd700" stroke-width="2"/><path d="M48 22 L44 18" stroke="#ffd700" stroke-width="2"/><path d="M40 20 L40 14" stroke="#ffd700" stroke-width="2"/></svg>`,
-legend:`<svg viewBox="0 0 64 64" width="48" height="48"><circle cx="32" cy="34" r="24" fill="#e1bee7"/><circle cx="32" cy="34" r="20" fill="#ba68c8"/><ellipse cx="14" cy="16" rx="8" ry="14" fill="#ba68c8" transform="rotate(-15 14 16)"/><ellipse cx="50" cy="16" rx="8" ry="14" fill="#ba68c8" transform="rotate(15 50 16)"/><ellipse cx="14" cy="16" rx="5" ry="10" fill="#e1bee7" transform="rotate(-15 14 16)"/><ellipse cx="50" cy="16" rx="5" ry="10" fill="#e1bee7" transform="rotate(15 50 16)"/><circle cx="24" cy="28" r="5" fill="#1a1a2e"/><circle cx="40" cy="28" r="5" fill="#1a1a2e"/><circle cx="25.5" cy="26" r="2.5" fill="white"/><circle cx="41.5" cy="26" r="2.5" fill="white"/><circle cx="23" cy="27" r="1" fill="white"/><circle cx="39" cy="27" r="1" fill="white"/><ellipse cx="32" cy="40" rx="4" ry="3" fill="#1a1a2e"/><path d="M20 44 Q32 58 44 44" stroke="#1a1a2e" stroke-width="2" fill="none"/><line x1="8" y1="36" x2="16" y2="34" stroke="#1a1a2e" stroke-width="1.5"/><line x1="48" y1="34" x2="56" y2="36" stroke="#1a1a2e" stroke-width="1.5"/><ellipse cx="22" cy="38" rx="6" ry="4" fill="rgba(255,150,200,0.5)"/><ellipse cx="42" cy="38" rx="6" ry="4" fill="rgba(255,150,200,0.5)"/><path d="M14 18 L18 10" stroke="#ffd700" stroke-width="2"/><path d="M24 16 L24 6" stroke="#ffd700" stroke-width="2"/><path d="M34 16 L34 8" stroke="#ffd700" stroke-width="2"/><path d="M44 16 L48 10" stroke="#ffd700" stroke-width="2"/><circle cx="18" cy="48" r="2" fill="#ffeb3b" opacity="0.7"/><circle cx="46" cy="48" r="2" fill="#ffeb3b" opacity="0.7"/></svg>`
+trash:`<svg viewBox="0 0 64 64" width="48" height="48"><polygon points="12,20 6,2 22,14" fill="#ff6b6b"/><polygon points="52,14 58,2 42,20" fill="#ff6b6b"/><polygon points="14,18 9,6 21,15" fill="#ffb3b3"/><polygon points="50,15 55,6 43,18" fill="#ffb3b3"/><circle cx="32" cy="36" r="22" fill="#ff6b6b"/><circle cx="32" cy="36" r="18" fill="#ffb3b3"/><ellipse cx="24" cy="32" rx="4" ry="5" fill="#2d1b1b"/><ellipse cx="40" cy="32" rx="4" ry="5" fill="#2d1b1b"/><circle cx="25.5" cy="30" r="2" fill="white"/><circle cx="41.5" cy="30" r="2" fill="white"/><polygon points="32,40 30,43 34,43" fill="#2d1b1b"/><path d="M25 47 Q32 43 39 47" stroke="#2d1b1b" stroke-width="1.8" fill="none" stroke-linecap="round"/><line x1="6" y1="35" x2="15" y2="37" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><line x1="6" y1="40" x2="15" y2="40" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><line x1="6" y1="45" x2="15" y2="43" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="35" x2="49" y2="37" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="40" x2="49" y2="40" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="45" x2="49" y2="43" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="20" cy="40" rx="5" ry="3" fill="rgba(255,100,100,0.35)"/><ellipse cx="44" cy="40" rx="5" ry="3" fill="rgba(255,100,100,0.35)"/><path d="M22 33 Q24 31 26 33" stroke="#2d1b1b" stroke-width="1" fill="none"/><path d="M38 33 Q40 31 42 33" stroke="#2d1b1b" stroke-width="1" fill="none"/></svg>`,
+tease:`<svg viewBox="0 0 64 64" width="48" height="48"><polygon points="12,20 6,2 22,14" fill="#ffb347"/><polygon points="52,14 58,2 42,20" fill="#ffb347"/><polygon points="14,18 9,6 21,15" fill="#ffe0b2"/><polygon points="50,15 55,6 43,18" fill="#ffe0b2"/><circle cx="32" cy="36" r="22" fill="#ffb347"/><circle cx="32" cy="36" r="18" fill="#ffe0b2"/><ellipse cx="24" cy="32" rx="4" ry="3.5" fill="#2d1b1b"/><ellipse cx="40" cy="32" rx="4" ry="5" fill="#2d1b1b"/><circle cx="25.5" cy="31" r="1.8" fill="white"/><circle cx="41.5" cy="30" r="2" fill="white"/><polygon points="32,40 30,43 34,43" fill="#2d1b1b"/><path d="M26 46 Q32 50 38 46" stroke="#2d1b1b" stroke-width="1.8" fill="none" stroke-linecap="round"/><line x1="6" y1="35" x2="15" y2="37" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><line x1="6" y1="40" x2="15" y2="40" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><line x1="6" y1="45" x2="15" y2="43" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="35" x2="49" y2="37" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="40" x2="49" y2="40" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="45" x2="49" y2="43" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="20" cy="40" rx="5" ry="3" fill="rgba(255,180,100,0.35)"/><ellipse cx="44" cy="40" rx="5" ry="3" fill="rgba(255,180,100,0.35)"/></svg>`,
+mid:`<svg viewBox="0 0 64 64" width="48" height="48"><polygon points="12,20 6,2 22,14" fill="#bdbdbd"/><polygon points="52,14 58,2 42,20" fill="#bdbdbd"/><polygon points="14,18 9,6 21,15" fill="#e0e0e0"/><polygon points="50,15 55,6 43,18" fill="#e0e0e0"/><circle cx="32" cy="36" r="22" fill="#bdbdbd"/><circle cx="32" cy="36" r="18" fill="#e0e0e0"/><circle cx="24" cy="32" r="3.5" fill="#2d1b1b"/><circle cx="40" cy="32" r="3.5" fill="#2d1b1b"/><circle cx="25" cy="31" r="1.5" fill="white"/><circle cx="41" cy="31" r="1.5" fill="white"/><polygon points="32,40 30,43 34,43" fill="#2d1b1b"/><line x1="27" y1="46" x2="37" y2="46" stroke="#2d1b1b" stroke-width="1.8" stroke-linecap="round"/><line x1="6" y1="35" x2="15" y2="37" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><line x1="6" y1="41" x2="15" y2="40" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><line x1="6" y1="47" x2="15" y2="43" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="35" x2="49" y2="37" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="41" x2="49" y2="40" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="47" x2="49" y2="43" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="20" cy="40" rx="5" ry="3" fill="rgba(255,150,200,0.25)"/><ellipse cx="44" cy="40" rx="5" ry="3" fill="rgba(255,150,200,0.25)"/></svg>`,
+good:`<svg viewBox="0 0 64 64" width="48" height="48"><polygon points="12,20 6,2 22,14" fill="#81c784"/><polygon points="52,14 58,2 42,20" fill="#81c784"/><polygon points="14,18 9,6 21,15" fill="#c8e6c9"/><polygon points="50,15 55,6 43,18" fill="#c8e6c9"/><circle cx="32" cy="36" r="22" fill="#81c784"/><circle cx="32" cy="36" r="18" fill="#c8e6c9"/><path d="M20 30 Q24 26 28 30" stroke="#2d1b1b" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M36 30 Q40 26 44 30" stroke="#2d1b1b" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="24" cy="33" r="1.2" fill="#2d1b1b"/><circle cx="40" cy="33" r="1.2" fill="#2d1b1b"/><polygon points="32,40 30,43 34,43" fill="#2d1b1b"/><path d="M25 46 Q32 52 39 46" stroke="#2d1b1b" stroke-width="1.8" fill="none" stroke-linecap="round"/><line x1="6" y1="35" x2="15" y2="37" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><line x1="6" y1="41" x2="15" y2="40" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><line x1="6" y1="47" x2="15" y2="43" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="35" x2="49" y2="37" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="41" x2="49" y2="40" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="47" x2="49" y2="43" stroke="#2d1b1b" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="20" cy="40" rx="5" ry="3" fill="rgba(255,150,200,0.35)"/><ellipse cx="44" cy="40" rx="5" ry="3" fill="rgba(255,150,200,0.35)"/></svg>`,
+pro:`<svg viewBox="0 0 64 64" width="48" height="48"><polygon points="12,20 6,2 22,14" fill="#64b5f6"/><polygon points="52,14 58,2 42,20" fill="#64b5f6"/><polygon points="14,18 9,6 21,15" fill="#bbdefb"/><polygon points="50,15 55,6 43,18" fill="#bbdefb"/><circle cx="32" cy="36" r="22" fill="#64b5f6"/><circle cx="32" cy="36" r="18" fill="#bbdefb"/><circle cx="24" cy="30" r="4.5" fill="#1a1a2e"/><circle cx="40" cy="30" r="4.5" fill="#1a1a2e"/><circle cx="25.5" cy="28.5" r="2.2" fill="white"/><circle cx="41.5" cy="28.5" r="2.2" fill="white"/><circle cx="24.5" cy="29.5" r="0.8" fill="white"/><circle cx="40.5" cy="29.5" r="0.8" fill="white"/><polygon points="32,38 29.5,41 34.5,41" fill="#1a1a2e"/><path d="M24 44 Q32 54 40 44" stroke="#1a1a2e" stroke-width="1.8" fill="none" stroke-linecap="round"/><line x1="6" y1="35" x2="15" y2="37" stroke="#1a1a2e" stroke-width="1.2" stroke-linecap="round"/><line x1="6" y1="41" x2="15" y2="40" stroke="#1a1a2e" stroke-width="1.2" stroke-linecap="round"/><line x1="6" y1="47" x2="15" y2="43" stroke="#1a1a2e" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="35" x2="49" y2="37" stroke="#1a1a2e" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="41" x2="49" y2="40" stroke="#1a1a2e" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="47" x2="49" y2="43" stroke="#1a1a2e" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="20" cy="40" rx="6" ry="4" fill="rgba(255,150,200,0.35)"/><ellipse cx="44" cy="40" rx="6" ry="4" fill="rgba(255,150,200,0.35)"/></svg>`,
+legend:`<svg viewBox="0 0 64 64" width="48" height="48"><polygon points="12,20 6,2 22,14" fill="#ce93d8"/><polygon points="52,14 58,2 42,20" fill="#ce93d8"/><polygon points="14,18 9,6 21,15" fill="#f3e5f5"/><polygon points="50,15 55,6 43,18" fill="#f3e5f5"/><circle cx="32" cy="36" r="22" fill="#ce93d8"/><circle cx="32" cy="36" r="18" fill="#f3e5f5"/><circle cx="24" cy="30" r="5" fill="#1a1a2e"/><circle cx="40" cy="30" r="5" fill="#1a1a2e"/><circle cx="26" cy="28" r="2.5" fill="white"/><circle cx="42" cy="28" r="2.5" fill="white"/><circle cx="24.5" cy="29.5" r="1" fill="white"/><circle cx="40.5" cy="29.5" r="1" fill="white"/><polygon points="32,38 29,41 35,41" fill="#1a1a2e"/><path d="M22 44 Q32 56 42 44" stroke="#1a1a2e" stroke-width="1.8" fill="none" stroke-linecap="round"/><line x1="6" y1="35" x2="15" y2="37" stroke="#1a1a2e" stroke-width="1.2" stroke-linecap="round"/><line x1="6" y1="41" x2="15" y2="40" stroke="#1a1a2e" stroke-width="1.2" stroke-linecap="round"/><line x1="6" y1="47" x2="15" y2="43" stroke="#1a1a2e" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="35" x2="49" y2="37" stroke="#1a1a2e" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="41" x2="49" y2="40" stroke="#1a1a2e" stroke-width="1.2" stroke-linecap="round"/><line x1="58" y1="47" x2="49" y2="43" stroke="#1a1a2e" stroke-width="1.2" stroke-linecap="round"/><ellipse cx="20" cy="40" rx="6" ry="4" fill="rgba(255,150,200,0.4)"/><ellipse cx="44" cy="40" rx="6" ry="4" fill="rgba(255,150,200,0.4)"/><circle cx="14" cy="10" r="2" fill="#ffeb3b" opacity="0.8"/><circle cx="50" cy="10" r="2" fill="#ffeb3b" opacity="0.8"/><circle cx="32" cy="4" r="1.5" fill="#ffeb3b" opacity="0.6"/></svg>`
 };
 function getRoastMessage(sc){
   let pool,cls;
@@ -1248,23 +1273,63 @@ function renderSkinPreview(skin){
     const lbls={score:`Đạt ${skin.unlock.value} điểm`,pipes:`Qua ${skin.unlock.value} ống`,totalGames:`Chơi ${skin.unlock.value} lần`,combo:`Combo x${skin.unlock.value}`,powerups:`Nhặt ${skin.unlock.value} power-up`,dodged:`${skin.unlock.value} ống né được`};
     ue.textContent=`🔒 ${lbls[skin.unlock.type]||''}`;ue.style.color='#ffcc00';
   }
-  // draw preview
   const pc=document.getElementById('skinPreviewCanvas'),px=pc.getContext('2d');
   px.clearRect(0,0,48,48);
   const sz=14,now=performance.now();
   const sc=c=>{if(c==='rainbow')return`hsl(${(now*0.1)%360},80%,65%)`;return c;};
+  const hx=sz*0.15,hy=-sz*0.25,hr=sz*0.35;
   px.save();px.translate(24,28);
-  px.fillStyle=sc(skin.body);px.beginPath();px.ellipse(0,0,sz*0.55,sz*0.45,0,0,Math.PI*2);px.fill();
-  px.fillStyle=sc(skin.head);px.beginPath();px.arc(sz*0.25,-sz*0.18,sz*0.32,0,Math.PI*2);px.fill();
-  px.fillStyle=sc(skin.ear);
-  [[0.08,-0.42,0.03,-0.7,0.25,-0.46],[0.32,-0.42,0.42,-0.7,0.48,-0.42]].forEach(e=>{px.beginPath();px.moveTo(sz*e[0],sz*e[1]);px.lineTo(sz*e[2],sz*e[3]);px.lineTo(sz*e[4],sz*e[5]);px.fill();});
-  px.fillStyle=sc(skin.inner);
-  [[0.1,-0.44,0.08,-0.62,0.23,-0.47],[0.34,-0.44,0.41,-0.62,0.46,-0.44]].forEach(e=>{px.beginPath();px.moveTo(sz*e[0],sz*e[1]);px.lineTo(sz*e[2],sz*e[3]);px.lineTo(sz*e[4],sz*e[5]);px.fill();});
-  px.fillStyle=skin.eye;[0.17,0.35].forEach(ex=>{px.beginPath();px.ellipse(sz*ex,-sz*0.22,3,4,0,0,Math.PI*2);px.fill();});
-  px.fillStyle='white';[0.19,0.37].forEach(ex=>{px.beginPath();px.arc(sz*ex,-sz*0.25,1.5,0,Math.PI*2);px.fill();});
-  px.fillStyle=sc(skin.nose);px.beginPath();px.arc(sz*0.26,-sz*0.1,2.5,0,Math.PI*2);px.fill();
+  // tail
   px.strokeStyle=sc(skin.body);px.lineWidth=3;px.lineCap='round';
   px.beginPath();px.moveTo(-sz*0.45,0);px.quadraticCurveTo(-sz*0.7,-sz*0.3,-sz*0.6,-sz*0.55);px.stroke();
+  // body
+  px.fillStyle=sc(skin.body);px.beginPath();px.ellipse(0,0,sz*0.55,sz*0.45,0,0,Math.PI*2);px.fill();
+  // paws
+  px.fillStyle=sc(skin.body);[-0.2,0.15].forEach(px2=>{px.beginPath();px.ellipse(sz*px2,sz*0.4,sz*0.12,sz*0.08,0,0,Math.PI*2);px.fill();});
+  // left ear outer
+  px.fillStyle=sc(skin.ear);
+  px.beginPath();px.moveTo(hx-hr*0.75,hy-hr*0.1);px.lineTo(hx-hr*0.35,hy-hr*1.15);px.lineTo(hx+hr*0.15,hy-hr*0.45);px.closePath();px.fill();
+  // right ear outer
+  px.beginPath();px.moveTo(hx+hr*0.75,hy-hr*0.1);px.lineTo(hx+hr*0.35,hy-hr*1.15);px.lineTo(hx-hr*0.15,hy-hr*0.45);px.closePath();px.fill();
+  // left ear inner
+  px.fillStyle=sc(skin.inner);
+  px.beginPath();px.moveTo(hx-hr*0.55,hy-hr*0.15);px.lineTo(hx-hr*0.28,hy-hr*0.9);px.lineTo(hx+hr*0.08,hy-hr*0.45);px.closePath();px.fill();
+  // right ear inner
+  px.beginPath();px.moveTo(hx+hr*0.55,hy-hr*0.15);px.lineTo(hx+hr*0.28,hy-hr*0.9);px.lineTo(hx-hr*0.08,hy-hr*0.45);px.closePath();px.fill();
+  // head
+  px.fillStyle=sc(skin.head);px.beginPath();px.arc(hx,hy,hr,0,Math.PI*2);px.fill();
+  // cheeks
+  px.fillStyle=sc(skin.head);
+  px.beginPath();px.ellipse(hx-hr*0.65,hy+hr*0.35,hr*0.35,hr*0.28,-0.2,0,Math.PI*2);px.fill();
+  px.beginPath();px.ellipse(hx+hr*0.65,hy+hr*0.35,hr*0.35,hr*0.28,0.2,0,Math.PI*2);px.fill();
+  // eyes
+  const eyeR=hr*0.28,eyeY=hy-hr*0.08;
+  px.fillStyle=skin.eye;
+  px.beginPath();px.ellipse(hx-hr*0.3,eyeY,eyeR,eyeR,0,0,Math.PI*2);px.fill();
+  px.beginPath();px.ellipse(hx+hr*0.3,eyeY,eyeR,eyeR,0,0,Math.PI*2);px.fill();
+  px.fillStyle='white';const sr=eyeR*0.45;
+  px.beginPath();px.arc(hx-hr*0.22,eyeY-eyeR*0.25,sr,0,Math.PI*2);px.fill();
+  px.beginPath();px.arc(hx+hr*0.38,eyeY-eyeR*0.25,sr,0,Math.PI*2);px.fill();
+  const sr2=eyeR*0.2;
+  px.beginPath();px.arc(hx-hr*0.35,eyeY+eyeR*0.15,sr2,0,Math.PI*2);px.fill();
+  px.beginPath();px.arc(hx+hr*0.33,eyeY+eyeR*0.15,sr2,0,Math.PI*2);px.fill();
+  // nose
+  const noseY=hy+hr*0.15;
+  px.fillStyle=sc(skin.nose);px.beginPath();px.moveTo(hx,noseY-hr*0.08);px.lineTo(hx-hr*0.1,noseY+hr*0.06);px.lineTo(hx+hr*0.1,noseY+hr*0.06);px.closePath();px.fill();
+  // mouth
+  px.strokeStyle=sc(skin.nose);px.lineWidth=1.5;px.lineCap='round';
+  const mY=noseY+hr*0.08;
+  px.beginPath();px.moveTo(hx-hr*0.2,mY+hr*0.12);px.quadraticCurveTo(hx-hr*0.1,mY,hx,mY+hr*0.06);px.quadraticCurveTo(hx+hr*0.1,mY,hx+hr*0.2,mY+hr*0.12);px.stroke();
+  // whiskers
+  px.strokeStyle=sc(skin.nose);px.lineWidth=1;px.globalAlpha=0.6;
+  const wY=noseY+hr*0.05;
+  [[-0.9,-0.15],[-0.95,0.05],[-0.85,0.25]].forEach(([wx,wy])=>{px.beginPath();px.moveTo(hx-hr*0.15,wY+hr*wy);px.lineTo(hx+hr*wx,wY+hr*wy-hr*0.05);px.stroke();});
+  [[0.9,-0.15],[0.95,0.05],[0.85,0.25]].forEach(([wx,wy])=>{px.beginPath();px.moveTo(hx+hr*0.15,wY+hr*wy);px.lineTo(hx+hr*wx,wY+hr*wy-hr*0.05);px.stroke();});
+  px.globalAlpha=1;
+  // blush
+  px.fillStyle='rgba(255,150,180,0.25)';
+  px.beginPath();px.ellipse(hx-hr*0.55,hy+hr*0.3,hr*0.2,hr*0.12,0,0,Math.PI*2);px.fill();
+  px.beginPath();px.ellipse(hx+hr*0.55,hy+hr*0.3,hr*0.2,hr*0.12,0,0,Math.PI*2);px.fill();
   px.restore();
 }
 
