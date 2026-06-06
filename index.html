@@ -1454,13 +1454,13 @@ function buySkin(skinId){
 // ==================== BUTTON WIRING ====================
 document.getElementById('btnShare').onclick=()=>shareScore();
 document.getElementById('btnPlay').onclick=()=>{
-  initAudio();showScreen(null);document.getElementById('hud').classList.remove('hidden');startGame();
+  initAudio();showScreen('modes');renderModes();
 };
 document.getElementById('btnSkins').onclick=()=>{showScreen('skins');renderSkins();};
 document.getElementById('btnLeaderboard').onclick=()=>{showScreen('leaderboard');renderLeaderboard('all');};
-document.getElementById('btnMissions').onclick=()=>{showScreen('missions');renderMissions();};
-document.getElementById('btnProfile').onclick=()=>{showScreen('profile');renderProfile();};
-document.getElementById('btnModes').onclick=()=>{showScreen('modes');renderModes();};
+// btnMissions moved to top bar
+// btnProfile moved to top bar
+// btnModes removed - integrated into btnPlay
 document.getElementById('btnHistory').onclick=()=>{showScreen('history');renderHistory();};
 document.getElementById('btnSettings').onclick=()=>{showScreen('settings');renderMusicList();};
 document.getElementById('btnAchievements').onclick=()=>{showScreen('achievements');renderAchievements();};
@@ -1474,6 +1474,12 @@ document.getElementById('btnMissionsBack').onclick=()=>showScreen('menu');
 document.getElementById('btnProfileBack').onclick=()=>showScreen('menu');
 document.getElementById('btnModesBack').onclick=()=>showScreen('menu');
 document.getElementById('btnHistoryBack').onclick=()=>showScreen('menu');
+
+// Top bar corner buttons
+var missionsBtn=document.querySelector('.menu-corner-btn[id="btnMissions"]');
+if(missionsBtn)missionsBtn.onclick=function(){showScreen('missions');renderMissions();};
+var profileBtn=document.querySelector('.menu-corner-btn[id="btnProfile"]');
+if(profileBtn)profileBtn.onclick=function(){showScreen('profile');renderProfile();};
 
 // Leaderboard tabs
 document.querySelectorAll('.lb-tab').forEach(tab=>{
