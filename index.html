@@ -1787,7 +1787,7 @@ canvas {
 
 <script>
 // ==================== LANGUAGE SYSTEM ====================
-let currentLang = localStorage.getItem('fc_lang') || 'vi';
+window.currentLang = localStorage.getItem('fc_lang') || 'vi';
 const LANG = {
   vi: {
     play: '🎮 Chơi',
@@ -1957,8 +1957,9 @@ const LANG = {
   }
 };
 function t(key) { return LANG[currentLang][key] || LANG['vi'][key] || key; }
-function setLang(lang) {
-  currentLang = lang;
+var currentLang = window.currentLang;
+  function setLang(lang) {
+  window.currentLang = lang; currentLang = lang;
   localStorage.setItem('fc_lang', lang);
   updateAllText();
 }
@@ -3423,7 +3424,7 @@ function togglePause(){
   else if(state==='paused')resumeGame();
 }
 window.togglePause=togglePause;
-function toggleLang(){setLang(currentLang==='vi'?'en':'vi');}window.toggleLang=toggleLang;
+function toggleLang(){setLang(window.currentLang==='vi'?'en':'vi');}window.toggleLang=toggleLang;
 
 // ==================== MENU BACKGROUND ====================
 let menuAnimFrame=null;
