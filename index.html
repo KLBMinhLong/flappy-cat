@@ -1764,8 +1764,24 @@ const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 function resize() {
   const container = document.getElementById('gameContainer');
-  const w = window.innerWidth || container.clientWidth || 460;
-  const h = window.innerHeight || container.clientHeight || 820;
+  let w = window.innerWidth || 460;
+  let h = window.innerHeight || 820;
+  // Desktop: limit to 460px centered
+  if (w > 600) {
+    w = 460;
+    h = Math.min(820, Math.floor(window.innerHeight * 0.95));
+    container.style.left = '50%';
+    container.style.top = '50%';
+    container.style.transform = 'translate(-50%, -50%)';
+    container.style.borderRadius = '16px';
+    container.style.boxShadow = '0 0 40px rgba(255,150,200,0.15), 0 0 80px rgba(100,60,200,0.1)';
+  } else {
+    container.style.left = '0';
+    container.style.top = '0';
+    container.style.transform = 'none';
+    container.style.borderRadius = '0';
+    container.style.boxShadow = 'none';
+  }
   if (w > 0 && h > 0) {
     canvas.width = w;
     canvas.height = h;
