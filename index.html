@@ -3739,14 +3739,6 @@ function togglePause(){
     else if(state==='paused'&&typeof resumeGame==='function')resumeGame();
   }
 }
-function toggleLang(){
-  var lang=localStorage.getItem('fc_lang')||'vi';
-  var newLang=lang==='vi'?'en':'vi';
-  localStorage.setItem('fc_lang',newLang);
-  window.currentLang=newLang;
-  if(typeof updateAllText==='function')updateAllText();
-  location.reload();
-}
 function buySkin(id){
   if(typeof buySkinInternal==='function')buySkinInternal(id);
 }
