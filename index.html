@@ -730,17 +730,7 @@ function updateGame(){
   // collision
   const hit=checkCollision();
   if(hit==='shield'){
-    // Push cat completely past the pipe it hit
-    const tsz=catSz()*(activeTiny>0?0.65:1);
-    for(const p of pipes){
-      if(cat.x+tsz*0.5>p.x&&cat.x-tsz*0.5<p.x+pipeW()){
-        if(cat.y-tsz*0.3<p.topH||cat.y+tsz*0.3>p.topH+gap){
-          cat.x=p.x+pipeW()+tsz; // push past right edge of pipe
-          break;
-        }
-      }
-    }
-    activeShield=0;invincibleTimer=500;cat.vy=JUMP;
+    activeShield=0;invincibleTimer=1500;cat.vy=JUMP;
     playSound('hit');shakeTimer=200;shakeMag=5;
     spawnP(cat.x,cat.y,'#64c8ff',15);addFloat(cat.x,cat.y-30,'🛡️ Saved!','#64c8ff');updatePUBar();
   }else if(hit==='die')gameOver();
