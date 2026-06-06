@@ -1646,7 +1646,6 @@ menuLoop();
     renderer.setClearColor(0x000000, 0);
     renderer.shadowMap.enabled = true;
 
-    // Lighting
     scene.add(new THREE.AmbientLight(0xffffff, 0.6));
     const key = new THREE.DirectionalLight(0xfff5ee, 0.85);
     key.position.set(2, 3, 5); key.castShadow = true; scene.add(key);
@@ -1659,47 +1658,42 @@ menuLoop();
     catGroup.scale.set(0.55, 0.55, 0.55);
     scene.add(catGroup);
 
-    // Materials
     const furMat = new THREE.MeshStandardMaterial({color:0xF09020, roughness:0.75});
     const bellyMat = new THREE.MeshStandardMaterial({color:0xFFE8C8, roughness:0.8});
-    const innerEarMat = new THREE.MeshStandardMaterial({color:0xFFB8A8, roughness:0.6});
+    const innerEarMat = new THREE.MeshStandardMaterial({color:0xFF88A8, roughness:0.6});
     const noseMat = new THREE.MeshStandardMaterial({color:0xFF6088, roughness:0.3});
-    const eyeWhite = new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.1});
     const eyeBlack = new THREE.MeshStandardMaterial({color:0x111111, roughness:0.15});
     const outlineMat = new THREE.MeshBasicMaterial({color:0xffffff});
     const whiskerMat = new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.7});
     const smileMat = new THREE.MeshStandardMaterial({color:0xFF6088, roughness:0.4});
     const padMat = new THREE.MeshStandardMaterial({color:0xFFA0A8, roughness:0.5});
 
-    // ===== HEAD - PERFECT SPHERE =====
+    // ===== HEAD - SPHERE =====
     const head = new THREE.Mesh(new THREE.SphereGeometry(1.1, 64, 64), furMat);
     head.castShadow = true;
     catGroup.add(head);
 
-    // ===== FACE AREA (lighter belly on front) =====
-    const faceArea = new THREE.Mesh(new THREE.SphereGeometry(0.85, 48, 48), bellyMat);
-    faceArea.position.set(0, -0.1, 0.65);
-    catGroup.add(faceArea);
-
-    // ===== EARS - ROUNDED =====
+    // ===== EARS - POINTED (cone) with PINK inner =====
     function mkEar(x, rz) {
       const g = new THREE.Group();
-      const earGeo = new THREE.SphereGeometry(0.35, 24, 24);
-      earGeo.scale(1.0, 1.3, 0.5);
+      // Outer ear - POINTED cone
+      const earGeo = new THREE.ConeGeometry(0.32, 0.85, 4);
       const ear = new THREE.Mesh(earGeo, furMat);
       ear.castShadow = true; g.add(ear);
-      const innerGeo = new THREE.SphereGeometry(0.22, 24, 24);
-      innerGeo.scale(0.8, 1.1, 0.4);
+      // Inner ear - PINK
+      const innerGeo = new THREE.ConeGeometry(0.18, 0.5, 4);
       const inner = new THREE.Mesh(innerGeo, innerEarMat);
-      inner.position.set(0, 0, 0.08); g.add(inner);
-      g.position.set(x, 0.85, 0.1);
+      inner.position.set(0, 0.04, 0.06);
+      inner.scale.set(1, 1, 0.5);
+      g.add(inner);
+      g.position.set(x, 0.88, 0.1);
       g.rotation.z = rz;
       return g;
     }
     earL = mkEar(-0.5, 0.2); earR = mkEar(0.5, -0.2);
     catGroup.add(earL); catGroup.add(earR);
 
-    // ===== EYES - BIG, ROUND, OUTSIDE HEAD =====
+    // ===== EYES - BIG, ROUND, ON HEAD SURFACE =====
     function mkEye(x) {
       const g = new THREE.Group();
       // White outline ring
@@ -1709,7 +1703,7 @@ menuLoop();
       // Eye white
       const wGeo = new THREE.SphereGeometry(0.24, 32, 32);
       wGeo.scale(1.0, 1.0, 0.45);
-      const white = new THREE.Mesh(wGeo, eyeWhite);
+      const white = new THREE.Mesh(wGeo, outlineMat);
       white.position.z = 0.03; g.add(white);
       // Black iris
       const iGeo = new THREE.SphereGeometry(0.16, 32, 32);
@@ -1721,21 +1715,21 @@ menuLoop();
       hl.position.set(0.06, 0.07, 0.14); g.add(hl);
       const hl2 = new THREE.Mesh(new THREE.SphereGeometry(0.025, 12, 12), outlineMat);
       hl2.position.set(-0.04, -0.03, 0.14); g.add(hl2);
-      g.position.set(x, 0.15, 1.05);
+      g.position.set(x, 0.15, 1.08);
       return {group:g};
     }
     const le = mkEye(-0.3); const re = mkEye(0.3);
     eyeLGrp = le.group; eyeRGrp = re.group;
     catGroup.add(eyeLGrp); catGroup.add(eyeRGrp);
 
-    // ===== NOSE - OUTSIDE HEAD =====
+    // ===== NOSE - PINK, ON SURFACE =====
     const nGeo = new THREE.SphereGeometry(0.06, 24, 24);
     nGeo.scale(1.2, 0.8, 0.6);
     noseM = new THREE.Mesh(nGeo, noseMat);
     noseM.position.set(0, -0.08, 1.18);
     catGroup.add(noseM);
 
-    // ===== MOUTH - OUTSIDE HEAD =====
+    // ===== MOUTH - ON SURFACE =====
     const sGeo = new THREE.TorusGeometry(0.07, 0.01, 8, 16, Math.PI*0.5);
     const sL = new THREE.Mesh(sGeo, smileMat);
     sL.position.set(-0.04, -0.18, 1.12);
@@ -1748,18 +1742,18 @@ menuLoop();
 
     // ===== WHISKERS =====
     function wk(x,y,z,ry,rz,l){const g=new THREE.CylinderGeometry(.005,.002,l||.6,6);g.rotateZ(Math.PI/2);const m=new THREE.Mesh(g,whiskerMat);m.position.set(x,y,z);m.rotation.y=ry;m.rotation.z=rz;catGroup.add(m);}
-    wk(-0.45,-0.08,0.95,0.08,0.05,0.65); wk(-0.47,-0.14,0.95,0.08,-0.05,0.68);
-    wk(-0.43,-0.02,0.95,0.08,0.12,0.62); wk(-0.41,0.04,0.95,0.08,0.18,0.58);
-    wk(0.45,-0.08,0.95,-0.08,-0.05,0.65); wk(0.47,-0.14,0.95,-0.08,0.05,0.68);
-    wk(0.43,-0.02,0.95,-0.08,-0.12,0.62); wk(0.41,0.04,0.95,-0.08,-0.18,0.58);
+    wk(-0.45,-0.08,1.0,0.08,0.05,0.65); wk(-0.47,-0.14,1.0,0.08,-0.05,0.68);
+    wk(-0.43,-0.02,1.0,0.08,0.12,0.62); wk(-0.41,0.04,1.0,0.08,0.18,0.58);
+    wk(0.45,-0.08,1.0,-0.08,-0.05,0.65); wk(0.47,-0.14,1.0,-0.08,0.05,0.68);
+    wk(0.43,-0.02,1.0,-0.08,-0.12,0.62); wk(0.41,0.04,1.0,-0.08,-0.18,0.58);
 
     // ===== BLUSH =====
     const blMat = new THREE.MeshBasicMaterial({color:0xFF80A0, transparent:true, opacity:0.25});
     const blGeo = new THREE.CircleGeometry(0.15, 32);
     const bL = new THREE.Mesh(blGeo, blMat);
-    bL.position.set(-0.52,-0.1,1.0); bL.lookAt(-0.52-1,-0.1,1.0+1); catGroup.add(bL);
+    bL.position.set(-0.52,-0.1,1.02); bL.lookAt(-0.52-1,-0.1,1.02+1); catGroup.add(bL);
     const bR = new THREE.Mesh(blGeo, blMat);
-    bR.position.set(0.52,-0.1,1.0); bR.lookAt(0.52+1,-0.1,1.0+1); catGroup.add(bR);
+    bR.position.set(0.52,-0.1,1.02); bR.lookAt(0.52+1,-0.1,1.02+1); catGroup.add(bR);
 
     // ===== TINY BODY =====
     const body = new THREE.Mesh(new THREE.SphereGeometry(0.4, 32, 32), furMat);
@@ -1768,10 +1762,10 @@ menuLoop();
     body.castShadow = true;
     catGroup.add(body);
 
-    // Belly patch
-    const bp = new THREE.Mesh(new THREE.SphereGeometry(0.28, 24, 24), bellyMat);
-    bp.scale.set(0.7, 0.6, 0.5);
-    bp.position.set(0, -1.1, 0.2);
+    // Belly patch (small, on body only)
+    const bp = new THREE.Mesh(new THREE.SphereGeometry(0.25, 24, 24), bellyMat);
+    bp.scale.set(0.6, 0.5, 0.4);
+    bp.position.set(0, -1.1, 0.25);
     catGroup.add(bp);
 
     // ===== PAWS =====
@@ -1802,7 +1796,6 @@ menuLoop();
 
     catGroup.position.y = 0.1;
 
-    // Mouse tracking
     canvas.addEventListener('mousemove', e=>{const r=canvas.getBoundingClientRect();mx=((e.clientX-r.left)/r.width-.5)*2;my=((e.clientY-r.top)/r.height-.5)*2;});
     canvas.addEventListener('mouseleave', ()=>{mx=0;my=0;});
     canvas.addEventListener('touchmove', e=>{e.preventDefault();const r=canvas.getBoundingClientRect();const t=e.touches[0];mx=((t.clientX-r.left)/r.width-.5)*2;my=((t.clientY-r.top)/r.height-.5)*2;},{passive:false});
