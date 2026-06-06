@@ -1539,235 +1539,342 @@ menuLoop();
 
 
 <script>
-// ==================== 3D CAT HEAD (Three.js) ====================
+<script>
+// ==================== 3D ORANGE TABBY CAT HEAD (Three.js) ====================
 (function(){
   const canvas = document.getElementById('catCanvas3D');
   if (!canvas || typeof THREE === 'undefined') return;
 
   let scene, camera, renderer, catGroup;
-  let eyeL, eyeR, pupilL, pupilR, earL, earR, nose;
+  let eyeLGroup, eyeRGroup, pupilL, pupilR, irisL, irisR;
+  let earL, earR, noseMesh;
   let blinkTimer = 0, isBlinking = false, blinkPhase = 0;
   let mouseX = 0, mouseY = 0;
-  let animId = null;
-  let isActive = false;
+  let animId = null, isActive = false;
+  let headMesh, cheekL, cheekR, muzzleMesh;
+
+  // === FUR TEXTURE (canvas-generated tabby stripes) ===
+  function createFurTexture(baseColor, stripeColor, size) {
+    const c = document.createElement('canvas');
+    c.width = size; c.height = size;
+    const ctx = c.getContext('2d');
+
+    // Base color
+    ctx.fillStyle = baseColor;
+    ctx.fillRect(0, 0, size, size);
+
+    // Tabby stripes (M-shape on forehead + side stripes)
+    ctx.strokeStyle = stripeColor;
+    ctx.lineCap = 'round';
+
+    // Forehead M-mark
+    ctx.lineWidth = size * 0.06;
+    ctx.globalAlpha = 0.55;
+    const s = size;
+    ctx.beginPath();
+    ctx.moveTo(s*0.15, s*0.1); ctx.lineTo(s*0.3, s*0.25); ctx.lineTo(s*0.5, s*0.08);
+    ctx.lineTo(s*0.7, s*0.25); ctx.lineTo(s*0.85, s*0.1);
+    ctx.stroke();
+
+    // Side stripes
+    ctx.lineWidth = size * 0.04;
+    ctx.globalAlpha = 0.4;
+    for (let i = 0; i < 5; i++) {
+      const y = s * (0.3 + i * 0.12);
+      ctx.beginPath();
+      ctx.moveTo(s*0.05, y);
+      ctx.quadraticCurveTo(s*0.5, y + s*0.03, s*0.95, y);
+      ctx.stroke();
+    }
+
+    // Subtle noise/fur texture
+    ctx.globalAlpha = 0.08;
+    for (let i = 0; i < 2000; i++) {
+      const x = Math.random() * s;
+      const y = Math.random() * s;
+      const len = 3 + Math.random() * 6;
+      ctx.strokeStyle = Math.random() > 0.5 ? '#fff' : stripeColor;
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + len * (Math.random()-0.5), y + len);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    return tex;
+  }
+
+  // Lighter belly/fur texture
+  function createBellyTexture(baseColor, size) {
+    const c = document.createElement('canvas');
+    c.width = size; c.height = size;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = baseColor;
+    ctx.fillRect(0, 0, size, size);
+    // Subtle fur strokes
+    ctx.globalAlpha = 0.1;
+    ctx.strokeStyle = '#fff';
+    for (let i = 0; i < 800; i++) {
+      const x = Math.random() * size;
+      const y = Math.random() * size;
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(x + (Math.random()-0.5)*4, y + 3 + Math.random()*5);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    return new THREE.CanvasTexture(c);
+  }
 
   function init() {
     if (isActive) return;
     isActive = true;
 
-    // Scene
     scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+    camera.position.set(0, 0.2, 4.8);
 
-    // Camera
-    camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
-    camera.position.set(0, 0.3, 4.5);
-
-    // Renderer
     renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
     renderer.setSize(280, 280);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setClearColor(0x000000, 0);
     renderer.shadowMap.enabled = true;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
 
-    // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(ambientLight);
+    // === LIGHTING (warm, natural) ===
+    scene.add(new THREE.AmbientLight(0xfff5ee, 0.5));
 
-    const dirLight = new THREE.DirectionalLight(0xfff5ee, 0.8);
-    dirLight.position.set(2, 3, 4);
-    dirLight.castShadow = true;
-    scene.add(dirLight);
+    const keyLight = new THREE.DirectionalLight(0xffeedd, 0.9);
+    keyLight.position.set(3, 4, 5);
+    keyLight.castShadow = true;
+    scene.add(keyLight);
 
-    const fillLight = new THREE.DirectionalLight(0xffd4e5, 0.3);
-    fillLight.position.set(-2, 1, 2);
+    const fillLight = new THREE.DirectionalLight(0xffd4b8, 0.35);
+    fillLight.position.set(-3, 2, 3);
     scene.add(fillLight);
 
-    const rimLight = new THREE.DirectionalLight(0xaaddff, 0.25);
-    rimLight.position.set(0, -1, -3);
+    const rimLight = new THREE.DirectionalLight(0xffe0c0, 0.2);
+    rimLight.position.set(0, 1, -4);
     scene.add(rimLight);
 
-    // Cat group
+    const bottomFill = new THREE.DirectionalLight(0xffeedd, 0.15);
+    bottomFill.position.set(0, -3, 2);
+    scene.add(bottomFill);
+
     catGroup = new THREE.Group();
     scene.add(catGroup);
 
-    // Materials
+    // === TEXTURES ===
+    const furTex = createFurTexture('#E87820', '#B05A10', 512);
+    const bellyTex = createBellyTexture('#F4B878', 256);
+
+    // === MATERIALS ===
     const furMat = new THREE.MeshStandardMaterial({
-      color: 0xffb6d9,
-      roughness: 0.8,
-      metalness: 0.0,
+      map: furTex, roughness: 0.85, metalness: 0.0,
     });
-
+    const bellyMat = new THREE.MeshStandardMaterial({
+      map: bellyTex, roughness: 0.9, metalness: 0.0,
+    });
     const innerEarMat = new THREE.MeshStandardMaterial({
-      color: 0xff69b4,
-      roughness: 0.6,
-      metalness: 0.0,
+      color: 0xf4a0a0, roughness: 0.6, metalness: 0.0,
     });
-
-    const eyeWhiteMat = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      roughness: 0.2,
-      metalness: 0.1,
-    });
-
-    const irisMat = new THREE.MeshStandardMaterial({
-      color: 0x4a90d9,
-      roughness: 0.15,
-      metalness: 0.2,
-    });
-
-    const pupilMat = new THREE.MeshStandardMaterial({
-      color: 0x111111,
-      roughness: 0.1,
-      metalness: 0.3,
-    });
-
     const noseMat = new THREE.MeshStandardMaterial({
-      color: 0xff69b4,
-      roughness: 0.3,
-      metalness: 0.1,
+      color: 0xf090a0, roughness: 0.35, metalness: 0.05,
+    });
+    const eyeWhiteMat = new THREE.MeshStandardMaterial({
+      color: 0xf8f8f0, roughness: 0.15, metalness: 0.05,
+    });
+    const irisMat = new THREE.MeshStandardMaterial({
+      color: 0x6B8E23, roughness: 0.12, metalness: 0.15,
+    });
+    const pupilMat = new THREE.MeshStandardMaterial({
+      color: 0x0a0a0a, roughness: 0.05, metalness: 0.2,
+    });
+    const whiskerMat = new THREE.MeshBasicMaterial({
+      color: 0xeeeeee, transparent: true, opacity: 0.65,
+    });
+    const mouthMat = new THREE.MeshStandardMaterial({
+      color: 0xd07070, roughness: 0.4,
     });
 
-    // === HEAD ===
-    const headGeo = new THREE.SphereGeometry(1.1, 48, 48);
-    // Slightly squash for wider cheeks
-    headGeo.scale(1.0, 0.95, 0.95);
-    const head = new THREE.Mesh(headGeo, furMat);
-    head.castShadow = true;
-    catGroup.add(head);
+    // === HEAD (more cat-shaped: wide cheeks, narrow muzzle) ===
+    const headGeo = new THREE.SphereGeometry(1.15, 64, 64);
+    headGeo.scale(1.0, 0.92, 0.9);
+    headMesh = new THREE.Mesh(headGeo, furMat);
+    headMesh.castShadow = true;
+    catGroup.add(headMesh);
 
-    // Cheek puffs
-    const cheekGeo = new THREE.SphereGeometry(0.42, 32, 32);
-    const cheekL = new THREE.Mesh(cheekGeo, furMat);
-    cheekL.position.set(-0.72, -0.15, 0.55);
-    cheekL.scale.set(1, 0.85, 0.8);
+    // Cheek puffs (fluffy!)
+    const cheekGeo = new THREE.SphereGeometry(0.48, 32, 32);
+    cheekL = new THREE.Mesh(cheekGeo, bellyMat);
+    cheekL.position.set(-0.72, -0.2, 0.6);
+    cheekL.scale.set(1.05, 0.9, 0.85);
     catGroup.add(cheekL);
 
-    const cheekR = new THREE.Mesh(cheekGeo, furMat);
-    cheekR.position.set(0.72, -0.15, 0.55);
-    cheekR.scale.set(1, 0.85, 0.8);
+    cheekR = new THREE.Mesh(cheekGeo, bellyMat);
+    cheekR.position.set(0.72, -0.2, 0.6);
+    cheekR.scale.set(1.05, 0.9, 0.85);
     catGroup.add(cheekR);
 
-    // Forehead bump (subtle)
-    const foreheadGeo = new THREE.SphereGeometry(0.55, 32, 32);
+    // Forehead (slightly wider, cat-like)
+    const foreheadGeo = new THREE.SphereGeometry(0.6, 32, 32);
     const forehead = new THREE.Mesh(foreheadGeo, furMat);
-    forehead.position.set(0, 0.45, 0.6);
-    forehead.scale.set(1.1, 0.6, 0.5);
+    forehead.position.set(0, 0.5, 0.65);
+    forehead.scale.set(1.2, 0.55, 0.5);
     catGroup.add(forehead);
 
-    // === EARS ===
-    function createEar(x, rotZ) {
+    // Muzzle (narrower area around mouth/nose)
+    const muzzleGeo = new THREE.SphereGeometry(0.35, 32, 32);
+    muzzleGeo.scale(0.9, 0.7, 0.6);
+    muzzleMesh = new THREE.Mesh(muzzleGeo, bellyMat);
+    muzzleMesh.position.set(0, -0.25, 0.85);
+    catGroup.add(muzzleMesh);
+
+    // Chin
+    const chinGeo = new THREE.SphereGeometry(0.22, 24, 24);
+    const chin = new THREE.Mesh(chinGeo, bellyMat);
+    chin.position.set(0, -0.5, 0.75);
+    chin.scale.set(1.2, 0.8, 0.6);
+    catGroup.add(chin);
+
+    // Bridge of nose (subtle ridge)
+    const bridgeGeo = new THREE.SphereGeometry(0.18, 24, 24);
+    const bridge = new THREE.Mesh(bridgeGeo, furMat);
+    bridge.position.set(0, 0.05, 1.0);
+    bridge.scale.set(0.7, 1.2, 0.5);
+    catGroup.add(bridge);
+
+    // === EARS (more realistic: slightly tilted, pointed) ===
+    function createEar(x, rotZ, flip) {
       const earGroup = new THREE.Group();
 
-      // Outer ear - cone shape
-      const earGeo = new THREE.ConeGeometry(0.42, 0.85, 4);
+      // Outer ear - taller, more pointed cone
+      const earGeo = new THREE.ConeGeometry(0.38, 0.95, 4);
       earGeo.rotateZ(Math.PI);
+      // Slightly asymmetric for realism
       const ear = new THREE.Mesh(earGeo, furMat);
       ear.castShadow = true;
       earGroup.add(ear);
 
       // Inner ear
-      const innerGeo = new THREE.ConeGeometry(0.26, 0.55, 4);
+      const innerGeo = new THREE.ConeGeometry(0.22, 0.6, 4);
       innerGeo.rotateZ(Math.PI);
       const inner = new THREE.Mesh(innerGeo, innerEarMat);
-      inner.position.set(0, 0.05, 0.06);
-      inner.scale.set(1, 1, 0.6);
+      inner.position.set(0, 0.05, 0.05);
+      inner.scale.set(1, 1, 0.5);
       earGroup.add(inner);
 
-      earGroup.position.set(x, 0.85, 0.1);
+      // Ear tufts (small fur at base)
+      const tuftGeo = new THREE.SphereGeometry(0.1, 12, 12);
+      const tuft = new THREE.Mesh(tuftGeo, furMat);
+      tuft.position.set(flip * 0.05, -0.35, 0.05);
+      tuft.scale.set(1.5, 0.8, 0.5);
+      earGroup.add(tuft);
+
+      earGroup.position.set(x, 0.9, 0.05);
       earGroup.rotation.z = rotZ;
       return earGroup;
     }
 
-    earL = createEar(-0.6, 0.25);
-    earR = createEar(0.6, -0.25);
+    earL = createEar(-0.55, 0.22, -1);
+    earR = createEar(0.55, -0.22, 1);
     catGroup.add(earL);
     catGroup.add(earR);
 
-    // === EYES ===
+    // === EYES (realistic cat eyes: almond, green iris, slit pupil) ===
     function createEye(x) {
       const eyeGroup = new THREE.Group();
 
-      // Eye white
-      const whiteGeo = new THREE.SphereGeometry(0.26, 32, 32);
+      // Eye white (slightly almond-shaped via scale)
+      const whiteGeo = new THREE.SphereGeometry(0.24, 32, 32);
+      whiteGeo.scale(1.15, 1.0, 0.85);
       const white = new THREE.Mesh(whiteGeo, eyeWhiteMat);
       eyeGroup.add(white);
 
-      // Iris
-      const irisGeo = new THREE.SphereGeometry(0.19, 32, 32);
+      // Iris (green, larger)
+      const irisGeo = new THREE.SphereGeometry(0.18, 32, 32);
+      irisGeo.scale(1.1, 1.1, 0.7);
       const iris = new THREE.Mesh(irisGeo, irisMat);
-      iris.position.z = 0.12;
+      iris.position.z = 0.1;
       eyeGroup.add(iris);
 
-      // Pupil
-      const pupGeo = new THREE.SphereGeometry(0.11, 32, 32);
+      // Pupil (vertical slit)
+      const pupGeo = new THREE.SphereGeometry(0.09, 32, 32);
+      pupGeo.scale(0.45, 1.3, 0.8);
       const pupil = new THREE.Mesh(pupGeo, pupilMat);
-      pupil.position.z = 0.18;
+      pupil.position.z = 0.14;
       eyeGroup.add(pupil);
 
-      // Shine (specular highlight)
-      const shineGeo = new THREE.SphereGeometry(0.055, 16, 16);
+      // Specular highlight (large)
       const shineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-      const shine = new THREE.Mesh(shineGeo, shineMat);
-      shine.position.set(0.06, 0.07, 0.24);
-      eyeGroup.add(shine);
+      const shine1 = new THREE.Mesh(new THREE.SphereGeometry(0.045, 16, 16), shineMat);
+      shine1.position.set(0.05, 0.06, 0.18);
+      eyeGroup.add(shine1);
 
-      // Small secondary shine
-      const shine2Geo = new THREE.SphereGeometry(0.025, 12, 12);
-      const shine2 = new THREE.Mesh(shine2Geo, shineMat);
-      shine2.position.set(-0.05, -0.04, 0.24);
+      // Secondary highlight (small)
+      const shine2 = new THREE.Mesh(new THREE.SphereGeometry(0.022, 12, 12), shineMat);
+      shine2.position.set(-0.04, -0.03, 0.18);
       eyeGroup.add(shine2);
 
-      // Eyelid (for blink)
-      const lidGeo = new THREE.SphereGeometry(0.28, 32, 32, 0, Math.PI * 2, 0, Math.PI * 0.5);
-      const lidMat = new THREE.MeshStandardMaterial({ color: 0xffb6d9, roughness: 0.8 });
-      const lid = new THREE.Mesh(lidGeo, lidMat);
-      lid.rotation.x = Math.PI;
-      lid.position.y = 0.26;
-      lid.visible = false;
-      eyeGroup.add(lid);
-
-      eyeGroup.position.set(x, 0.15, 0.85);
-      return { group: eyeGroup, pupil, lid };
+      eyeGroup.position.set(x, 0.18, 0.88);
+      return { group: eyeGroup, pupil, iris };
     }
 
-    const leftEye = createEye(-0.38);
-    const rightEye = createEye(0.38);
-    eyeL = leftEye.group;
-    eyeR = rightEye.group;
+    const leftEye = createEye(-0.4);
+    const rightEye = createEye(0.4);
+    eyeLGroup = leftEye.group;
+    eyeRGroup = rightEye.group;
     pupilL = leftEye.pupil;
     pupilR = rightEye.pupil;
-    catGroup.add(eyeL);
-    catGroup.add(eyeR);
+    irisL = leftEye.iris;
+    irisR = rightEye.iris;
+    catGroup.add(eyeLGroup);
+    catGroup.add(eyeRGroup);
 
-    // Store lid refs for blink
-    eyeL._lid = leftEye.lid;
-    eyeR._lid = rightEye.lid;
+    // === NOSE (realistic cat nose: pink, triangular with nostrils) ===
+    const noseGeo = new THREE.SphereGeometry(0.09, 24, 24);
+    noseGeo.scale(1.3, 0.85, 0.65);
+    noseMesh = new THREE.Mesh(noseGeo, noseMat);
+    noseMesh.position.set(0, -0.08, 1.05);
+    catGroup.add(noseMesh);
 
-    // === NOSE ===
-    const noseGeo = new THREE.SphereGeometry(0.09, 16, 16);
-    noseGeo.scale(1.2, 0.8, 0.6);
-    nose = new THREE.Mesh(noseGeo, noseMat);
-    nose.position.set(0, -0.12, 1.0);
-    catGroup.add(nose);
+    // Nostrils
+    const nostrilMat = new THREE.MeshStandardMaterial({ color: 0xc07078, roughness: 0.3 });
+    const nostrilGeo = new THREE.SphereGeometry(0.025, 12, 12);
+    const nostrilL = new THREE.Mesh(nostrilGeo, nostrilMat);
+    nostrilL.position.set(-0.04, -0.1, 1.06);
+    catGroup.add(nostrilL);
+    const nostrilR = new THREE.Mesh(nostrilGeo, nostrilMat);
+    nostrilR.position.set(0.04, -0.1, 1.06);
+    catGroup.add(nostrilR);
 
-    // === MOUTH ===
-    const mouthMat = new THREE.MeshStandardMaterial({ color: 0xff69b4, roughness: 0.5 });
-    // W-shape using thin torus segments
-    const mouthCurve1 = new THREE.TorusGeometry(0.12, 0.015, 8, 16, Math.PI * 0.6);
-    const mouth1 = new THREE.Mesh(mouthCurve1, mouthMat);
-    mouth1.position.set(-0.08, -0.22, 0.95);
-    mouth1.rotation.set(0.1, 0.3, 0.2);
-    catGroup.add(mouth1);
+    // Nose-to-mouth line
+    const lineGeo = new THREE.CylinderGeometry(0.008, 0.008, 0.12, 6);
+    const lineMat = new THREE.MeshBasicMaterial({ color: 0xb06060, transparent: true, opacity: 0.5 });
+    const noseLine = new THREE.Mesh(lineGeo, lineMat);
+    noseLine.position.set(0, -0.18, 1.02);
+    catGroup.add(noseLine);
 
-    const mouth2 = new THREE.Mesh(mouthCurve1, mouthMat);
-    mouth2.position.set(0.08, -0.22, 0.95);
-    mouth2.rotation.set(0.1, -0.3, -0.2);
-    catGroup.add(mouth2);
+    // === MOUTH (subtle cat W-shape) ===
+    const mouthCurve = new THREE.TorusGeometry(0.1, 0.012, 8, 16, Math.PI * 0.55);
+    const mouthL = new THREE.Mesh(mouthCurve, mouthMat);
+    mouthL.position.set(-0.07, -0.27, 0.96);
+    mouthL.rotation.set(0.1, 0.35, 0.15);
+    catGroup.add(mouthL);
 
-    // === WHISKERS ===
-    const whiskerMat = new THREE.MeshBasicMaterial({ color: 0x444444, transparent: true, opacity: 0.5 });
-    function createWhisker(x, y, z, rotY, rotZ) {
-      const geo = new THREE.CylinderGeometry(0.008, 0.004, 0.7, 6);
+    const mouthR = new THREE.Mesh(mouthCurve, mouthMat);
+    mouthR.position.set(0.07, -0.27, 0.96);
+    mouthR.rotation.set(0.1, -0.35, -0.15);
+    catGroup.add(mouthR);
+
+    // === WHISKERS (long, realistic) ===
+    function createWhisker(x, y, z, rotY, rotZ, len) {
+      const geo = new THREE.CylinderGeometry(0.006, 0.002, len || 0.8, 6);
       geo.rotateZ(Math.PI / 2);
       const mesh = new THREE.Mesh(geo, whiskerMat);
       mesh.position.set(x, y, z);
@@ -1776,31 +1883,44 @@ menuLoop();
       return mesh;
     }
 
-    // Left whiskers
-    catGroup.add(createWhisker(-0.5, -0.1, 0.7, 0.1, 0));
-    catGroup.add(createWhisker(-0.52, -0.18, 0.7, 0.1, -0.15));
-    catGroup.add(createWhisker(-0.48, -0.02, 0.7, 0.1, 0.15));
+    // Left whiskers (3)
+    catGroup.add(createWhisker(-0.55, -0.12, 0.72, 0.12, 0.02, 0.85));
+    catGroup.add(createWhisker(-0.57, -0.2, 0.72, 0.12, -0.12, 0.9));
+    catGroup.add(createWhisker(-0.53, -0.04, 0.72, 0.12, 0.16, 0.8));
 
-    // Right whiskers
-    catGroup.add(createWhisker(0.5, -0.1, 0.7, -0.1, 0));
-    catGroup.add(createWhisker(0.52, -0.18, 0.7, -0.1, 0.15));
-    catGroup.add(createWhisker(0.48, -0.02, 0.7, -0.1, -0.15));
+    // Right whiskers (3)
+    catGroup.add(createWhisker(0.55, -0.12, 0.72, -0.12, -0.02, 0.85));
+    catGroup.add(createWhisker(0.57, -0.2, 0.72, -0.12, 0.12, 0.9));
+    catGroup.add(createWhisker(0.53, -0.04, 0.72, -0.12, -0.16, 0.8));
+
+    // Whisker dots (small spheres where whiskers attach)
+    const dotGeo = new THREE.SphereGeometry(0.015, 8, 8);
+    const dotMat = new THREE.MeshBasicMaterial({ color: 0x886655 });
+    for (let i = 0; i < 3; i++) {
+      const dy = [-0.12, -0.2, -0.04][i];
+      const dl = new THREE.Mesh(dotGeo, dotMat);
+      dl.position.set(-0.48, dy, 0.82);
+      catGroup.add(dl);
+      const dr = new THREE.Mesh(dotGeo, dotMat);
+      dr.position.set(0.48, dy, 0.82);
+      catGroup.add(dr);
+    }
 
     // === BLUSH ===
-    const blushMat = new THREE.MeshBasicMaterial({ color: 0xff8fAB, transparent: true, opacity: 0.3 });
-    const blushGeo = new THREE.CircleGeometry(0.2, 32);
+    const blushMat = new THREE.MeshBasicMaterial({ color: 0xff90a0, transparent: true, opacity: 0.2 });
+    const blushGeo = new THREE.CircleGeometry(0.18, 32);
     const blushL = new THREE.Mesh(blushGeo, blushMat);
-    blushL.position.set(-0.65, -0.15, 0.75);
-    blushL.lookAt(-0.65 - 1, -0.15, 0.75 + 1);
+    blushL.position.set(-0.68, -0.12, 0.78);
+    blushL.lookAt(-0.68 - 1, -0.12, 0.78 + 1);
     catGroup.add(blushL);
 
     const blushR = new THREE.Mesh(blushGeo, blushMat);
-    blushR.position.set(0.65, -0.15, 0.75);
-    blushR.lookAt(0.65 + 1, -0.15, 0.75 + 1);
+    blushR.position.set(0.68, -0.12, 0.78);
+    blushR.lookAt(0.68 + 1, -0.12, 0.78 + 1);
     catGroup.add(blushR);
 
-    // Position cat
-    catGroup.position.y = -0.1;
+    // Position
+    catGroup.position.y = -0.05;
 
     // Mouse tracking
     canvas.addEventListener('mousemove', (e) => {
@@ -1808,8 +1928,17 @@ menuLoop();
       mouseX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
       mouseY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
     });
-
     canvas.addEventListener('mouseleave', () => { mouseX = 0; mouseY = 0; });
+
+    // Touch support
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const t = e.touches[0];
+      mouseX = ((t.clientX - rect.left) / rect.width - 0.5) * 2;
+      mouseY = ((t.clientY - rect.top) / rect.height - 0.5) * 2;
+    }, { passive: false });
+    canvas.addEventListener('touchend', () => { mouseX = 0; mouseY = 0; });
 
     animate();
   }
@@ -1819,47 +1948,62 @@ menuLoop();
     animId = requestAnimationFrame(animate);
     const t = performance.now() * 0.001;
 
-    // Idle bob
-    catGroup.position.y = -0.1 + Math.sin(t * 1.2) * 0.06;
-    catGroup.rotation.z = Math.sin(t * 0.8) * 0.03;
+    // Idle breathing
+    catGroup.position.y = -0.05 + Math.sin(t * 1.0) * 0.05;
+    catGroup.rotation.z = Math.sin(t * 0.7) * 0.025;
 
-    // Head follows mouse slightly
-    const targetRotY = mouseX * 0.3;
-    const targetRotX = -mouseY * 0.15;
-    catGroup.rotation.y += (targetRotY - catGroup.rotation.y) * 0.05;
-    catGroup.rotation.x += (targetRotX - catGroup.rotation.x) * 0.05;
+    // Head follow mouse (smooth)
+    const tY = mouseX * 0.35;
+    const tX = -mouseY * 0.2;
+    catGroup.rotation.y += (tY - catGroup.rotation.y) * 0.04;
+    catGroup.rotation.x += (tX - catGroup.rotation.x) * 0.04;
 
-    // Ear wiggle
-    earL.rotation.z = 0.25 + Math.sin(t * 2) * 0.08;
-    earR.rotation.z = -0.25 + Math.sin(t * 2 + 0.5) * 0.08;
+    // Ear wiggle (subtle, realistic)
+    earL.rotation.z = 0.22 + Math.sin(t * 1.8) * 0.06 + Math.sin(t * 3.2) * 0.02;
+    earR.rotation.z = -0.22 + Math.sin(t * 1.8 + 0.5) * 0.06 + Math.sin(t * 3.2 + 1) * 0.02;
 
-    // Blink
+    // Blink (cat-like: fast close, slow open)
     blinkTimer += 16;
-    if (!isBlinking && blinkTimer > 3000 + Math.random() * 3000) {
+    if (!isBlinking && blinkTimer > 2500 + Math.random() * 4000) {
       isBlinking = true;
       blinkPhase = 0;
       blinkTimer = 0;
     }
     if (isBlinking) {
-      blinkPhase += 0.15;
-      const blinkAmt = Math.sin(blinkPhase * Math.PI);
-      eyeL.scale.y = 1 - blinkAmt * 0.9;
-      eyeR.scale.y = 1 - blinkAmt * 0.9;
+      blinkPhase += 0.18;
+      // Fast close, hold, slow open
+      let blinkAmt;
+      if (blinkPhase < 0.4) blinkAmt = blinkPhase / 0.4;
+      else if (blinkPhase < 0.6) blinkAmt = 1;
+      else blinkAmt = 1 - (blinkPhase - 0.6) / 0.4;
+
+      eyeLGroup.scale.y = Math.max(0.05, 1 - blinkAmt * 0.95);
+      eyeRGroup.scale.y = Math.max(0.05, 1 - blinkAmt * 0.95);
+
       if (blinkPhase >= 1) {
         isBlinking = false;
-        eyeL.scale.y = 1;
-        eyeR.scale.y = 1;
+        eyeLGroup.scale.y = 1;
+        eyeRGroup.scale.y = 1;
       }
     }
 
-    // Eye follow mouse (pupil movement)
+    // Pupil follow mouse (slit pupil moves)
     if (pupilL && pupilR) {
-      const px = mouseX * 0.04;
-      const py = -mouseY * 0.03;
+      const px = mouseX * 0.035;
+      const py = -mouseY * 0.025;
       pupilL.position.x = px;
-      pupilL.position.y = py + 0.0;
+      pupilL.position.y = py;
       pupilR.position.x = px;
-      pupilR.position.y = py + 0.0;
+      pupilR.position.y = py;
+      // Iris moves with pupil
+      if (irisL) { irisL.position.x = px * 0.7; irisL.position.y = py * 0.7; }
+      if (irisR) { irisR.position.x = px * 0.7; irisR.position.y = py * 0.7; }
+    }
+
+    // Subtle nose twitch (cats do this!)
+    if (noseMesh) {
+      noseMesh.scale.x = 1 + Math.sin(t * 4) * 0.02;
+      noseMesh.scale.y = 1 + Math.cos(t * 4) * 0.02;
     }
 
     renderer.render(scene, camera);
@@ -1870,35 +2014,24 @@ menuLoop();
     if (animId) { cancelAnimationFrame(animId); animId = null; }
   }
 
-  // Expose for menu system
   window.initCat3D = init;
   window.cleanupCat3D = cleanup;
 
-  // Auto-init when menu is shown
+  // Auto-init when menu shown
   const observer = new MutationObserver(() => {
-    const menuScreen = document.getElementById('menuScreen');
-    if (menuScreen && !menuScreen.classList.contains('hidden')) {
-      init();
-    } else {
-      cleanup();
-    }
+    const menu = document.getElementById('menuScreen');
+    if (menu && !menu.classList.contains('hidden')) init();
+    else cleanup();
   });
 
-  // Start observing after DOM ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      const menuScreen = document.getElementById('menuScreen');
-      if (menuScreen) {
-        observer.observe(menuScreen, { attributes: true, attributeFilter: ['class'] });
-        if (!menuScreen.classList.contains('hidden')) init();
-      }
+      const menu = document.getElementById('menuScreen');
+      if (menu) { observer.observe(menu, { attributes: true, attributeFilter: ['class'] }); if (!menu.classList.contains('hidden')) init(); }
     });
   } else {
-    const menuScreen = document.getElementById('menuScreen');
-    if (menuScreen) {
-      observer.observe(menuScreen, { attributes: true, attributeFilter: ['class'] });
-      if (!menuScreen.classList.contains('hidden')) init();
-    }
+    const menu = document.getElementById('menuScreen');
+    if (menu) { observer.observe(menu, { attributes: true, attributeFilter: ['class'] }); if (!menu.classList.contains('hidden')) init(); }
   }
 })();
 </script>
