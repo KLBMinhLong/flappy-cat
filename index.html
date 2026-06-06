@@ -20,6 +20,7 @@
       <div class="pu-icon" id="puSlow">⏳</div>
       <div class="pu-icon" id="puTiny">🐁</div>
     </div>
+    <button id="pauseBtn" onclick="togglePause()">⏸️</button>
   </div>
 
   <!-- MAIN MENU -->
@@ -528,7 +529,7 @@ function catSz(){return Math.round(canvas.width*0.07)*MODES[currentMode].sizeMul
 function groundH(){return Math.round(canvas.height*0.046);}
 
 // ==================== GAME STATE ====================
-let state='idle'; // idle|playing|over
+let state='idle'; // idle|ready|playing|paused|over
 let cat, pipes, particles, floatTexts, powerups;
 let score, combo, comboTimer, pipesCleared, powerupsCollected;
 let difficulty, invincibleTimer, shakeTimer, shakeMag;
@@ -947,7 +948,13 @@ function drawGame(){
 }
 
 let animFrame=null;
-function gameLoop(){updateGame();drawGame();animFrame=requestAnimationFrame(gameLoop);}
+function gameLoop(){
+  if(state==='playing')updateGame();
+  drawGame();
+  if(state==='ready')drawReadyOverlay();
+  if(state==='paused')drawPauseOverlay();
+  animFrame=requestAnimationFrame(gameLoop);
+}
 
 // ==================== UI UPDATES ====================
 function updateScoreUI(){
@@ -1499,28 +1506,97 @@ document.getElementById('vibrateToggle').onchange=saveSettings;
 // ==================== GAME START ====================
 function startGame(){
   if(menuAnimFrame){cancelAnimationFrame(menuAnimFrame);menuAnimFrame=null;}
-  initGame();state='playing';
+  initGame();state='ready';
   updateScoreUI();updateComboUI();updatePUBar();
-  startMusic();
   if(animFrame)cancelAnimationFrame(animFrame);
   gameLoop();
+}
+function beginPlaying(){
+  state='playing';startMusic();
 }
 
 // ==================== INPUT ====================
 document.addEventListener('keydown',e=>{
   if(e.code==='Space'||e.code==='ArrowUp'){
     e.preventDefault();
-    if(state==='playing'){cat.vy=JUMP;playSound('flap');spawnP(cat.x-10,cat.y+10,'rgba(255,255,255,0.5)',3);}
+    if(state==='ready'){beginPlaying();}else if(state==='paused'){resumeGame();}else if(state==='playing'){cat.vy=JUMP;playSound('flap');spawnP(cat.x-10,cat.y+10,'rgba(255,255,255,0.5)',3);}
     else if(currentScreen==='gameOver'){showScreen(null);document.getElementById('hud').classList.remove('hidden');startGame();}
     else if(currentScreen==='menu')document.getElementById('btnPlay').click();
+  }
+  if(e.code==='Escape'){
+    e.preventDefault();
+    if(state==='playing')pauseGame();
+    else if(state==='paused')resumeGame();
+  }
   }
 });
 
 canvas.addEventListener('pointerdown',e=>{
-  if(state==='playing'&&currentScreen===null){
+  if(currentScreen!==null)return;
+  if(state==='ready'){e.preventDefault();beginPlaying();return;}
+  if(state==='paused'){e.preventDefault();resumeGame();return;}
+  if(state==='playing'){
     e.preventDefault();cat.vy=JUMP;playSound('flap');spawnP(cat.x-10,cat.y+10,'rgba(255,255,255,0.5)',3);
   }
 });
+
+
+// ==================== READY & PAUSE OVERLAYS ====================
+function drawReadyOverlay(){
+  ctx.save();
+  // Dim background
+  ctx.fillStyle='rgba(0,0,0,0.25)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  // Tap text
+  ctx.fillStyle='rgba(255,255,255,0.95)';
+  ctx.font='bold '+Math.round(canvas.width*0.06)+'px "Segoe UI",system-ui,sans-serif';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  const pulse=1+Math.sin(performance.now()*0.004)*0.08;
+  ctx.save();
+  ctx.translate(canvas.width/2,canvas.height*0.42);
+  ctx.scale(pulse,pulse);
+  ctx.fillText('Nhấn để bắt đầu',0,0);
+  ctx.restore();
+  ctx.font=Math.round(canvas.width*0.035)+'px "Segoe UI",system-ui,sans-serif';
+  ctx.fillStyle='rgba(255,255,255,0.5)';
+  ctx.fillText('Tap · Fly · Survive',canvas.width/2,canvas.height*0.5);
+  ctx.restore();
+}
+
+function drawPauseOverlay(){
+  ctx.save();
+  ctx.fillStyle='rgba(0,0,0,0.55)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='rgba(255,255,255,0.95)';
+  ctx.font='bold '+Math.round(canvas.width*0.08)+'px "Segoe UI",system-ui,sans-serif';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText('TẠM DỪNG',canvas.width/2,canvas.height*0.38);
+  ctx.font=Math.round(canvas.width*0.04)+'px "Segoe UI",system-ui,sans-serif';
+  ctx.fillStyle='rgba(255,255,255,0.6)';
+  ctx.fillText('Nhấn để tiếp tục',canvas.width/2,canvas.height*0.48);
+  ctx.restore();
+}
+
+let pausedAt=0;
+function pauseGame(){
+  if(state!=='playing')return;
+  state='paused';
+  pausedAt=performance.now();
+  stopMusic();
+  document.getElementById('pauseBtn').textContent='▶️';
+}
+function resumeGame(){
+  if(state!=='paused')return;
+  state='playing';
+  startMusic();
+  document.getElementById('pauseBtn').textContent='⏸️';
+}
+function togglePause(){
+  if(state==='playing')pauseGame();
+  else if(state==='paused')resumeGame();
+}
 
 // ==================== MENU BACKGROUND ====================
 let menuAnimFrame=null;
