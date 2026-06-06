@@ -227,6 +227,10 @@ canvas {
   margin: 0 auto;
   flex-shrink: 0;
 }
+.menu-cat canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
 
 /* Menu top corner buttons */
 .menu-top-bar {
@@ -1550,7 +1554,7 @@ canvas {
       <button class="menu-corner-btn" id="btnProfile">👤</button>
     </div>
     <div class="menu-content">
-      <div class="menu-cat" id="menuCat"><canvas id="catCanvas3D" width="400" height="400"></canvas></div>
+      <div class="menu-cat" id="menuCat"><canvas id="catCanvas3D"></canvas></div>
       <h1 class="menu-title">Flappy Cat</h1>
       <p class="menu-subtitle">Tap · Fly · Survive</p>
       <div class="menu-highscore" id="menuHighscore">Best: 0</div>
@@ -3181,7 +3185,7 @@ menuLoop();
     camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
     camera.position.set(0, 0.1, 6.5);
     renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
-    renderer.setSize(400, 400);
+    renderer.setSize(canvas.clientWidth || 180, canvas.clientHeight || 180);
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     renderer.setClearColor(0x000000, 0);
     renderer.shadowMap.enabled = true;
@@ -3383,7 +3387,7 @@ menuLoop();
     tailM = new THREE.Mesh(new THREE.TubeGeometry(tc, 16, 0.06, 12, false), furMat);
     tailM.castShadow = true; catGroup.add(tailM);
 
-    catGroup.position.y = 0.1;
+    catGroup.position.y = 0.2;
 
     canvas.addEventListener('mousemove', e=>{const r=canvas.getBoundingClientRect();mx=((e.clientX-r.left)/r.width-.5)*2;my=((e.clientY-r.top)/r.height-.5)*2;});
     canvas.addEventListener('mouseleave', ()=>{mx=0;my=0;});
@@ -3397,7 +3401,7 @@ menuLoop();
     animId = requestAnimationFrame(animate);
     const t = performance.now() * 0.001;
 
-    catGroup.position.y = 0.1 + Math.sin(t*1.2)*0.035;
+    catGroup.position.y = 0.2 + Math.sin(t*1.2)*0.035;
     catGroup.rotation.z = Math.sin(t*0.8)*0.015;
     catGroup.rotation.y += (mx*0.25 - catGroup.rotation.y)*0.04;
     catGroup.rotation.x += (-my*0.12 - catGroup.rotation.x)*0.04;
