@@ -1634,218 +1634,172 @@ menuLoop();
   let mx = 0, my = 0;
   let animId = null, active = false;
 
-  function makeFur(base, stripe, sz) {
-    const c = document.createElement('canvas'); c.width=sz; c.height=sz;
-    const x = c.getContext('2d'), s = sz;
-    x.fillStyle = base; x.fillRect(0,0,s,s);
-    // Embossed forehead stripes (raised, same color, subtle shadow)
-    x.strokeStyle = stripe; x.lineCap = 'round';
-    x.lineWidth = s*0.08; x.globalAlpha = 0.3;
-    x.beginPath();
-    x.moveTo(s*0.35,s*0.12); x.quadraticCurveTo(s*0.42,s*0.22,s*0.5,s*0.12);
-    x.stroke();
-    x.beginPath();
-    x.moveTo(s*0.45,s*0.15); x.quadraticCurveTo(s*0.5,s*0.25,s*0.55,s*0.15);
-    x.stroke();
-    x.beginPath();
-    x.moveTo(s*0.28,s*0.18); x.quadraticCurveTo(s*0.35,s*0.28,s*0.42,s*0.18);
-    x.stroke();
-    x.beginPath();
-    x.moveTo(s*0.58,s*0.18); x.quadraticCurveTo(s*0.65,s*0.28,s*0.72,s*0.18);
-    x.stroke();
-    // Cheek stripes
-    x.lineWidth = s*0.05; x.globalAlpha = 0.25;
-    x.beginPath(); x.moveTo(s*0.12,s*0.55); x.quadraticCurveTo(s*0.2,s*0.58,s*0.28,s*0.55); x.stroke();
-    x.beginPath(); x.moveTo(s*0.72,s*0.55); x.quadraticCurveTo(s*0.8,s*0.58,s*0.88,s*0.55); x.stroke();
-    x.globalAlpha = 1;
-    const t = new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; return t;
-  }
-
   function init() {
     if (active) return; active = true;
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
-    camera.position.set(0, 0.15, 7.0);
+    camera.position.set(0, 0.1, 6.5);
     renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
     renderer.setSize(400, 400);
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     renderer.setClearColor(0x000000, 0);
     renderer.shadowMap.enabled = true;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
 
-    // Soft, warm lighting for kawaii look
-    scene.add(new THREE.AmbientLight(0xfff8f0, 0.6));
+    // Lighting
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
     const key = new THREE.DirectionalLight(0xfff5ee, 0.85);
     key.position.set(2, 3, 5); key.castShadow = true; scene.add(key);
     const fill = new THREE.DirectionalLight(0xffe8d8, 0.35);
     fill.position.set(-3, 2, 3); scene.add(fill);
-    const rim = new THREE.DirectionalLight(0xffd0c0, 0.2);
-    rim.position.set(0, 1, -4); scene.add(rim);
     const bottom = new THREE.DirectionalLight(0xfff0e8, 0.2);
     bottom.position.set(0, -2, 3); scene.add(bottom);
 
     catGroup = new THREE.Group();
-    catGroup.scale.set(0.5, 0.5, 0.5);
+    catGroup.scale.set(0.55, 0.55, 0.55);
     scene.add(catGroup);
 
-    const furTex = makeFur('#F09020','#C06808',512);
-    const fur = new THREE.MeshStandardMaterial({map:furTex, roughness:0.75, metalness:0});
-    const belly = new THREE.MeshStandardMaterial({color:0xFFE8C8, roughness:0.8, metalness:0});
-    const innerEarMat = new THREE.MeshStandardMaterial({color:0xFFB8A8, roughness:0.6, metalness:0});
-    const noseMat = new THREE.MeshStandardMaterial({color:0xFF6088, roughness:0.3, metalness:0.05});
-    const eyeWhite = new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.1, metalness:0.05});
-    const eyeBlack = new THREE.MeshStandardMaterial({color:0x111111, roughness:0.15, metalness:0.1});
-    const eyeOutline = new THREE.MeshBasicMaterial({color:0xffffff});
+    // Materials
+    const furMat = new THREE.MeshStandardMaterial({color:0xF09020, roughness:0.75});
+    const bellyMat = new THREE.MeshStandardMaterial({color:0xFFE8C8, roughness:0.8});
+    const innerEarMat = new THREE.MeshStandardMaterial({color:0xFFB8A8, roughness:0.6});
+    const noseMat = new THREE.MeshStandardMaterial({color:0xFF6088, roughness:0.3});
+    const eyeWhite = new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.1});
+    const eyeBlack = new THREE.MeshStandardMaterial({color:0x111111, roughness:0.15});
+    const outlineMat = new THREE.MeshBasicMaterial({color:0xffffff});
     const whiskerMat = new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:0.7});
-    const mouthMat = new THREE.MeshStandardMaterial({color:0xFF6088, roughness:0.4});
+    const smileMat = new THREE.MeshStandardMaterial({color:0xFF6088, roughness:0.4});
+    const padMat = new THREE.MeshStandardMaterial({color:0xFFA0A8, roughness:0.5});
 
-    // ===== HEAD - PERFECT SPHERE (chibi) =====
-    const head = new THREE.Mesh(new THREE.SphereGeometry(1.15, 64, 64), fur);
+    // ===== HEAD - PERFECT SPHERE =====
+    const head = new THREE.Mesh(new THREE.SphereGeometry(1.1, 64, 64), furMat);
     head.castShadow = true;
     catGroup.add(head);
 
-    // Belly/face area (lighter, like the reference)
-    const faceArea = new THREE.Mesh(new THREE.SphereGeometry(1.13, 48, 48), belly);
-    faceArea.scale.set(0.75, 0.65, 0.45);
-    faceArea.position.set(0, -0.15, 0.35);
+    // ===== FACE AREA (lighter belly on front) =====
+    const faceArea = new THREE.Mesh(new THREE.SphereGeometry(0.85, 48, 48), bellyMat);
+    faceArea.position.set(0, -0.1, 0.65);
     catGroup.add(faceArea);
 
-    // ===== EARS - ROUNDED (not pointed!) =====
+    // ===== EARS - ROUNDED =====
     function mkEar(x, rz) {
       const g = new THREE.Group();
-      // Rounded ear shape using sphere
-      const earGeo = new THREE.SphereGeometry(0.38, 24, 24);
+      const earGeo = new THREE.SphereGeometry(0.35, 24, 24);
       earGeo.scale(1.0, 1.3, 0.5);
-      const ear = new THREE.Mesh(earGeo, fur);
+      const ear = new THREE.Mesh(earGeo, furMat);
       ear.castShadow = true; g.add(ear);
-      // Inner ear
-      const innerGeo = new THREE.SphereGeometry(0.25, 24, 24);
+      const innerGeo = new THREE.SphereGeometry(0.22, 24, 24);
       innerGeo.scale(0.8, 1.1, 0.4);
       const inner = new THREE.Mesh(innerGeo, innerEarMat);
-      inner.position.set(0, 0, 0.06); g.add(inner);
-      g.position.set(x, 0.88, 0.08);
+      inner.position.set(0, 0, 0.08); g.add(inner);
+      g.position.set(x, 0.85, 0.1);
       g.rotation.z = rz;
       return g;
     }
-    earL = mkEar(-0.55, 0.2); earR = mkEar(0.55, -0.2);
+    earL = mkEar(-0.5, 0.2); earR = mkEar(0.5, -0.2);
     catGroup.add(earL); catGroup.add(earR);
 
-    // ===== EYES - BIG, ROUND, KAWAII =====
+    // ===== EYES - BIG, ROUND, OUTSIDE HEAD =====
     function mkEye(x) {
       const g = new THREE.Group();
-      // White outline ring (thick)
-      const outlineGeo = new THREE.SphereGeometry(0.3, 32, 32);
-      outlineGeo.scale(1.0, 1.0, 0.5);
-      const outline = new THREE.Mesh(outlineGeo, eyeOutline);
-      g.add(outline);
+      // White outline ring
+      const outGeo = new THREE.SphereGeometry(0.28, 32, 32);
+      outGeo.scale(1.0, 1.0, 0.5);
+      g.add(new THREE.Mesh(outGeo, outlineMat));
       // Eye white
-      const wGeo = new THREE.SphereGeometry(0.26, 32, 32);
+      const wGeo = new THREE.SphereGeometry(0.24, 32, 32);
       wGeo.scale(1.0, 1.0, 0.45);
       const white = new THREE.Mesh(wGeo, eyeWhite);
-      white.position.z = 0.02; g.add(white);
-      // Black iris/pupil (solid black, no detail - kawaii style)
-      const iGeo = new THREE.SphereGeometry(0.18, 32, 32);
+      white.position.z = 0.03; g.add(white);
+      // Black iris
+      const iGeo = new THREE.SphereGeometry(0.16, 32, 32);
       iGeo.scale(1.0, 1.0, 0.4);
       const iris = new THREE.Mesh(iGeo, eyeBlack);
-      iris.position.z = 0.06; g.add(iris);
-      // Highlight (white dot, top-right)
-      const hlGeo = new THREE.SphereGeometry(0.06, 16, 16);
-      const hl = new THREE.Mesh(hlGeo, eyeOutline);
-      hl.position.set(0.07, 0.08, 0.12); g.add(hl);
-      // Small secondary highlight
-      const hl2 = new THREE.Mesh(new THREE.SphereGeometry(0.03, 12, 12), eyeOutline);
-      hl2.position.set(-0.05, -0.04, 0.12); g.add(hl2);
-      g.position.set(x, 0.12, 0.82);
+      iris.position.z = 0.08; g.add(iris);
+      // Highlight
+      const hl = new THREE.Mesh(new THREE.SphereGeometry(0.055, 16, 16), outlineMat);
+      hl.position.set(0.06, 0.07, 0.14); g.add(hl);
+      const hl2 = new THREE.Mesh(new THREE.SphereGeometry(0.025, 12, 12), outlineMat);
+      hl2.position.set(-0.04, -0.03, 0.14); g.add(hl2);
+      g.position.set(x, 0.15, 1.05);
       return {group:g};
     }
-    const le = mkEye(-0.32); const re = mkEye(0.32);
+    const le = mkEye(-0.3); const re = mkEye(0.3);
     eyeLGrp = le.group; eyeRGrp = re.group;
     catGroup.add(eyeLGrp); catGroup.add(eyeRGrp);
 
-    // ===== NOSE - tiny pink button =====
-    const nGeo = new THREE.SphereGeometry(0.065, 24, 24);
+    // ===== NOSE - OUTSIDE HEAD =====
+    const nGeo = new THREE.SphereGeometry(0.06, 24, 24);
     nGeo.scale(1.2, 0.8, 0.6);
     noseM = new THREE.Mesh(nGeo, noseMat);
-    noseM.position.set(0, -0.12, 1.06);
+    noseM.position.set(0, -0.08, 1.18);
     catGroup.add(noseM);
 
-    // ===== MOUTH - cute cat smile =====
-    const smileMat = mouthMat;
-    // Left smile curve
-    const smileL = new THREE.TorusGeometry(0.08, 0.012, 8, 16, Math.PI*0.5);
-    const sL = new THREE.Mesh(smileL, smileMat);
-    sL.position.set(-0.05, -0.22, 1.0);
+    // ===== MOUTH - OUTSIDE HEAD =====
+    const sGeo = new THREE.TorusGeometry(0.07, 0.01, 8, 16, Math.PI*0.5);
+    const sL = new THREE.Mesh(sGeo, smileMat);
+    sL.position.set(-0.04, -0.18, 1.12);
     sL.rotation.set(0.15, 0.3, 0.2);
     catGroup.add(sL);
-    // Right smile curve
-    const sR = new THREE.Mesh(smileL, smileMat);
-    sR.position.set(0.05, -0.22, 1.0);
+    const sR = new THREE.Mesh(sGeo, smileMat);
+    sR.position.set(0.04, -0.18, 1.12);
     sR.rotation.set(0.15, -0.3, -0.2);
     catGroup.add(sR);
 
-    // ===== WHISKERS - 4 per side, straight =====
-    function wk(x,y,z,ry,rz,l){const g=new THREE.CylinderGeometry(.006,.003,l||.65,6);g.rotateZ(Math.PI/2);const m=new THREE.Mesh(g,whiskerMat);m.position.set(x,y,z);m.rotation.y=ry;m.rotation.z=rz;catGroup.add(m);}
-    // Left whiskers
-    wk(-0.5,-0.12,0.7,0.08,0.05,0.7); wk(-0.52,-0.18,0.7,0.08,-0.05,0.72);
-    wk(-0.48,-0.06,0.7,0.08,0.12,0.68); wk(-0.46,0.0,0.7,0.08,0.18,0.65);
-    // Right whiskers
-    wk(0.5,-0.12,0.7,-0.08,-0.05,0.7); wk(0.52,-0.18,0.7,-0.08,0.05,0.72);
-    wk(0.48,-0.06,0.7,-0.08,-0.12,0.68); wk(0.46,0.0,0.7,-0.08,-0.18,0.65);
+    // ===== WHISKERS =====
+    function wk(x,y,z,ry,rz,l){const g=new THREE.CylinderGeometry(.005,.002,l||.6,6);g.rotateZ(Math.PI/2);const m=new THREE.Mesh(g,whiskerMat);m.position.set(x,y,z);m.rotation.y=ry;m.rotation.z=rz;catGroup.add(m);}
+    wk(-0.45,-0.08,0.95,0.08,0.05,0.65); wk(-0.47,-0.14,0.95,0.08,-0.05,0.68);
+    wk(-0.43,-0.02,0.95,0.08,0.12,0.62); wk(-0.41,0.04,0.95,0.08,0.18,0.58);
+    wk(0.45,-0.08,0.95,-0.08,-0.05,0.65); wk(0.47,-0.14,0.95,-0.08,0.05,0.68);
+    wk(0.43,-0.02,0.95,-0.08,-0.12,0.62); wk(0.41,0.04,0.95,-0.08,-0.18,0.58);
 
-    // ===== BLUSH (kawaii pink cheeks) =====
+    // ===== BLUSH =====
     const blMat = new THREE.MeshBasicMaterial({color:0xFF80A0, transparent:true, opacity:0.25});
-    const blGeo = new THREE.CircleGeometry(0.18, 32);
+    const blGeo = new THREE.CircleGeometry(0.15, 32);
     const bL = new THREE.Mesh(blGeo, blMat);
-    bL.position.set(-0.58,-0.15,0.82); bL.lookAt(-0.58-1,-0.15,0.82+1); catGroup.add(bL);
+    bL.position.set(-0.52,-0.1,1.0); bL.lookAt(-0.52-1,-0.1,1.0+1); catGroup.add(bL);
     const bR = new THREE.Mesh(blGeo, blMat);
-    bR.position.set(0.58,-0.15,0.82); bR.lookAt(0.58+1,-0.15,0.82+1); catGroup.add(bR);
+    bR.position.set(0.52,-0.1,1.0); bR.lookAt(0.52+1,-0.1,1.0+1); catGroup.add(bR);
 
-    // ===== TINY BODY (chibi - very small) =====
-    const bodyGeo = new THREE.SphereGeometry(0.45, 32, 32);
-    bodyGeo.scale(0.85, 0.7, 0.7);
-    const body = new THREE.Mesh(bodyGeo, fur);
-    body.position.set(0, -1.2, 0);
+    // ===== TINY BODY =====
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.4, 32, 32), furMat);
+    body.scale.set(0.85, 0.7, 0.7);
+    body.position.set(0, -1.15, 0);
     body.castShadow = true;
     catGroup.add(body);
 
-    // Belly patch on body
-    const bpGeo = new THREE.SphereGeometry(0.3, 24, 24);
-    bpGeo.scale(0.7, 0.6, 0.5);
-    const bp = new THREE.Mesh(bpGeo, belly);
-    bp.position.set(0, -1.15, 0.2);
+    // Belly patch
+    const bp = new THREE.Mesh(new THREE.SphereGeometry(0.28, 24, 24), bellyMat);
+    bp.scale.set(0.7, 0.6, 0.5);
+    bp.position.set(0, -1.1, 0.2);
     catGroup.add(bp);
 
-    // ===== TINY PAWS (chibi stubs) =====
+    // ===== PAWS =====
     function mkPaw(x) {
       const g = new THREE.Group();
-      const pad = new THREE.Mesh(new THREE.SphereGeometry(0.12, 20, 20), belly);
+      const pad = new THREE.Mesh(new THREE.SphereGeometry(0.1, 20, 20), bellyMat);
       pad.scale.set(0.85, 0.5, 0.65); g.add(pad);
-      const bigPad = new THREE.Mesh(new THREE.SphereGeometry(0.07, 16, 16),
-        new THREE.MeshStandardMaterial({color:0xFFA0A8, roughness:0.5}));
+      const bigPad = new THREE.Mesh(new THREE.SphereGeometry(0.06, 16, 16), padMat);
       bigPad.scale.set(1,0.5,0.8); bigPad.position.set(0,-0.02,0.02); g.add(bigPad);
-      // Toe beans
-      const beanG = new THREE.SphereGeometry(0.035, 12, 12);
+      const beanG = new THREE.SphereGeometry(0.03, 12, 12);
       beanG.scale(1,0.6,0.8);
-      const beanMat = new THREE.MeshStandardMaterial({color:0xFFA0A8, roughness:0.5});
-      [[-0.04,0.04,0.06],[0,0.055,0.08],[0.04,0.04,0.06]].forEach(([bx,by,bz])=>{
-        const bean = new THREE.Mesh(beanG, beanMat); bean.position.set(bx,by,bz); g.add(bean);
+      [[-0.035,0.035,0.05],[0,0.045,0.07],[0.035,0.035,0.05]].forEach(([bx,by,bz])=>{
+        const bean = new THREE.Mesh(beanG, padMat); bean.position.set(bx,by,bz); g.add(bean);
       });
-      g.position.set(x, -1.5, 0.15);
+      g.position.set(x, -1.4, 0.12);
       return g;
     }
-    catGroup.add(mkPaw(-0.2)); catGroup.add(mkPaw(0.2));
+    catGroup.add(mkPaw(-0.18)); catGroup.add(mkPaw(0.18));
 
-    // ===== TAIL (short, cute) =====
+    // ===== TAIL =====
     const tc = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-0.35, -1.2, -0.2),
-      new THREE.Vector3(-0.6, -1.0, -0.3),
-      new THREE.Vector3(-0.65, -0.7, -0.2),
+      new THREE.Vector3(-0.3, -1.15, -0.18),
+      new THREE.Vector3(-0.55, -0.9, -0.28),
+      new THREE.Vector3(-0.6, -0.6, -0.18),
     ]);
-    tailM = new THREE.Mesh(new THREE.TubeGeometry(tc, 16, 0.07, 12, false), fur);
+    tailM = new THREE.Mesh(new THREE.TubeGeometry(tc, 16, 0.06, 12, false), furMat);
     tailM.castShadow = true; catGroup.add(tailM);
 
-    catGroup.position.y = 0.15;
+    catGroup.position.y = 0.1;
 
     // Mouse tracking
     canvas.addEventListener('mousemove', e=>{const r=canvas.getBoundingClientRect();mx=((e.clientX-r.left)/r.width-.5)*2;my=((e.clientY-r.top)/r.height-.5)*2;});
@@ -1860,22 +1814,16 @@ menuLoop();
     animId = requestAnimationFrame(animate);
     const t = performance.now() * 0.001;
 
-    // Gentle breathing
-    catGroup.position.y = 0.15 + Math.sin(t*1.2)*0.04;
-    catGroup.rotation.z = Math.sin(t*0.8)*0.02;
-
-    // Head follow mouse
+    catGroup.position.y = 0.1 + Math.sin(t*1.2)*0.035;
+    catGroup.rotation.z = Math.sin(t*0.8)*0.015;
     catGroup.rotation.y += (mx*0.25 - catGroup.rotation.y)*0.04;
     catGroup.rotation.x += (-my*0.12 - catGroup.rotation.x)*0.04;
 
-    // Ear wiggle (gentle)
     earL.rotation.z = 0.2 + Math.sin(t*2.0)*0.05;
     earR.rotation.z = -0.2 + Math.sin(t*2.0+0.3)*0.05;
 
-    // Tail sway
     if (tailM) { tailM.rotation.y = Math.sin(t*1.5)*0.1; }
 
-    // Cute blink (quick, happy)
     blinkT += 16;
     if (!blinking && blinkT > 2000+Math.random()*3000) { blinking=true; blinkP=0; blinkT=0; }
     if (blinking) {
@@ -1886,7 +1834,6 @@ menuLoop();
       if(blinkP>=1){blinking=false;eyeLGrp.scale.y=1;eyeRGrp.scale.y=1;}
     }
 
-    // Nose twitch
     if (noseM) { noseM.scale.x=1+Math.sin(t*5)*0.03; noseM.scale.y=1+Math.cos(t*5)*0.03; }
 
     renderer.render(scene, camera);
