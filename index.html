@@ -673,9 +673,9 @@ function updateGame(){
   if(invincibleTimer>0)invincibleTimer-=dt;
   if(comboTimer>0){comboTimer-=dt;if(comboTimer<=0){combo=1;updateComboUI();}}
   if(shakeTimer>0)shakeTimer-=dt;
-  if(activeShield>0)activeShield-=dt;
-  if(activeSlow>0)activeSlow-=dt;
-  if(activeTiny>0)activeTiny-=dt;
+  if(activeShield>0){activeShield-=dt;if(activeShield<=0)updatePUBar();}
+  if(activeSlow>0){activeSlow-=dt;if(activeSlow<=0)updatePUBar();}
+  if(activeTiny>0){activeTiny-=dt;if(activeTiny<=0)updatePUBar();}
 
   const speedMul=activeSlow>0?0.6:1;
   const speed=getSpeed()*speedMul;
@@ -730,7 +730,17 @@ function updateGame(){
   // collision
   const hit=checkCollision();
   if(hit==='shield'){
-    activeShield=0;invincibleTimer=500;cat.x-=15;cat.vy=JUMP;
+    // Push cat completely past the pipe it hit
+    const tsz=catSz()*(activeTiny>0?0.65:1);
+    for(const p of pipes){
+      if(cat.x+tsz*0.5>p.x&&cat.x-tsz*0.5<p.x+pipeW()){
+        if(cat.y-tsz*0.3<p.topH||cat.y+tsz*0.3>p.topH+gap){
+          cat.x=p.x+pipeW()+tsz; // push past right edge of pipe
+          break;
+        }
+      }
+    }
+    activeShield=0;invincibleTimer=500;cat.vy=JUMP;
     playSound('hit');shakeTimer=200;shakeMag=5;
     spawnP(cat.x,cat.y,'#64c8ff',15);addFloat(cat.x,cat.y-30,'🛡️ Saved!','#64c8ff');updatePUBar();
   }else if(hit==='die')gameOver();
