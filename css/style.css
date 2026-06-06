@@ -122,6 +122,7 @@ canvas {
   color: white;
   padding: 0;
   line-height: 1;
+  pointer-events: auto;
 }
 
 #pauseBtn:hover {
