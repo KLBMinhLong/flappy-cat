@@ -3247,7 +3247,7 @@ function renderMusicList(){
   }
 }
 
-let currentMode='classic';
+window.currentMode='classic';var currentMode=window.currentMode;
 const MODES={
   classic:{name:'Classic',unlock:0,coinMul:1,speedMul:1,gapMul:1,sizeMul:1},
   hard:{name:'Hard Mode',unlock:5,coinMul:2,speedMul:1.5,gapMul:0.8,sizeMul:1},
@@ -3298,7 +3298,8 @@ document.getElementById('btnHistory').onclick=()=>{showScreen('history');renderH
 document.getElementById('btnSettings').onclick=()=>{showScreen('settings');renderMusicList();};
 document.getElementById('btnAchievements').onclick=()=>{showScreen('achievements');renderAchievements();};
 document.getElementById('btnRestart').onclick=()=>{showScreen(null);document.getElementById('hud').classList.remove('hidden');startGame();};
-document.getElementById('btnBackToMenu').onclick=()=>{if(animFrame)cancelAnimationFrame(animFrame);stopMusic();document.getElementById('menuHighscore').textContent=`Best: ${stats.bestScore}`;document.getElementById('menuCoins').textContent=`💰 ${stats.coins}`;if(stats.dailyStreak>1)document.getElementById('menuStreak').textContent=`🔥 Streak: ${stats.dailyStreak} ngày liên tiếp`;else document.getElementById('menuStreak').textContent='';showScreen('menu');if(!menuAnimFrame)menuLoop();};
+document.getElementById('btnBackToMenu').onclick=()=>{if(animFrame)cancelAnimationFrame(animFrame);stopMusic();document.getElementById('menuHighscore').textContent=`Best: ${stats.bestScore}`;document.getElementById('menuCoins').textContent=`💰 ${stats.coins}`;if(stats.dailyStreak>1)document.getElementById('menuStreak').textContent=`🔥 Streak: ${stats.dailyStreak} ngày liên tiếp`;else document.getElementById('menuStreak').textContent='';showScreen('menu');if(!menuAnimFrame)if(typeof updateAllText==='function')updateAllText();
+  menuLoop();};
 document.getElementById('btnSkinsBack').onclick=()=>showScreen('menu');
 document.getElementById('btnSettingsBack').onclick=()=>showScreen('menu');
 document.getElementById('btnAchievementsBack').onclick=()=>showScreen('menu');
@@ -3308,8 +3309,7 @@ document.getElementById('btnProfileBack').onclick=()=>showScreen('menu');
 document.getElementById('btnModesBack').onclick=()=>showScreen('menu');
 document.getElementById('btnHistoryBack').onclick=()=>showScreen('menu');
 
-updateAllText();
-    // Top bar corner buttons
+// Top bar corner buttons
 var missionsBtn=document.querySelector('.menu-corner-btn[id="btnMissions"]');
 if(missionsBtn)missionsBtn.onclick=function(){showScreen('missions');renderMissions();};
 var profileBtn=document.querySelector('.menu-corner-btn[id="btnProfile"]');
@@ -3423,11 +3423,11 @@ function togglePause(){
   if(state==='playing')pauseGame();
   else if(state==='paused')resumeGame();
 }
-window.togglePause=togglePause;
+// togglePause exposed below
 // toggleLang moved to global scope
 
 // ==================== MENU BACKGROUND ====================
-let menuAnimFrame=null;
+var menuAnimFrame=null;
 function menuLoop(){
   if(currentScreen==='menu'){
     drawBg(getTheme());drawGround();
@@ -3727,6 +3727,24 @@ menuLoop();
   }else{const m=document.getElementById('menuScreen');if(m)obs.observe(m,{attributes:true,attributeFilter:['class']});tryInit();}
   setTimeout(tryInit,1000);
 })();
+// Global functions for onclick handlers
+function togglePause(){
+  if(typeof state!=='undefined'){
+    if(state==='playing'&&typeof pauseGame==='function')pauseGame();
+    else if(state==='paused'&&typeof resumeGame==='function')resumeGame();
+  }
+}
+function toggleLang(){
+  var lang=localStorage.getItem('fc_lang')||'vi';
+  var newLang=lang==='vi'?'en':'vi';
+  localStorage.setItem('fc_lang',newLang);
+  window.currentLang=newLang;
+  if(typeof updateAllText==='function')updateAllText();
+  location.reload();
+}
+function buySkin(id){
+  if(typeof buySkinInternal==='function')buySkinInternal(id);
+}
 // Global language toggle (outside IIFE for onclick access)
 function toggleLang(){
   var lang = localStorage.getItem('fc_lang') || 'vi';
