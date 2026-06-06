@@ -1674,6 +1674,7 @@ canvas {
       <div id="roastMsg" class="roast-msg"></div>
       <div class="gameover-buttons">
         <button class="btn btn-play" id="btnRestart">🔄 Chơi lại</button>
+        <button class="btn btn-reward" id="btnWatchAd" style="background:linear-gradient(135deg,#ff6b35,#ff8c42);display:none">📺 Xem quảng cáo để tiếp tục</button>
         <button class="btn btn-share" id="btnShare">📤 Chia sẻ</button>
         <button class="btn btn-menu" id="btnBackToMenu">🏠 Menu</button>
       </div>
@@ -2750,6 +2751,8 @@ function gameOver(){
   if(score>=stats.bestScore)showToast('🏆','NEW BEST!','Đạt '+score+' điểm',2500);
   document.getElementById('hud').classList.add('hidden');
   showScreen('gameOver');
+  // Show interstitial ad every N games
+  if(typeof AdMobIntegration!=='undefined')AdMobIntegration.showInterstitial();
 }
 
 function drawGame(){
@@ -3292,7 +3295,10 @@ function buySkin(skinId){
 // ==================== BUTTON WIRING ====================
 document.getElementById('btnShare').onclick=()=>shareScore();
 document.getElementById('btnPlay').onclick=()=>{
-  initAudio();showScreen('modes');renderModes();
+  initAudio();
+  // Initialize AdMob on first play
+  if(typeof AdMobIntegration!=='undefined'&&!window._admobInited){window._admobInited=true;AdMobIntegration.init();}
+  showScreen('modes');renderModes();
 };
 document.getElementById('btnSkins').onclick=()=>{showScreen('skins');renderSkins();};
 document.getElementById('btnLeaderboard').onclick=()=>{showScreen('leaderboard');renderLeaderboard('all');};
@@ -3303,6 +3309,22 @@ document.getElementById('btnHistory').onclick=()=>{showScreen('history');renderH
 document.getElementById('btnSettings').onclick=()=>{showScreen('settings');renderMusicList();};
 document.getElementById('btnAchievements').onclick=()=>{showScreen('achievements');renderAchievements();};
 document.getElementById('btnRestart').onclick=()=>{showScreen(null);document.getElementById('hud').classList.remove('hidden');startGame();};
+  // Watch ad to continue button
+  const btnWatchAd=document.getElementById('btnWatchAd');
+  if(score>5){btnWatchAd.style.display='block';btnWatchAd.onclick=()=>{
+    if(typeof AdMobIntegration!=='undefined'){
+      AdMobIntegration.showRewarded(()=>{
+        // Revive! Continue from current score
+        showScreen(null);document.getElementById('hud').classList.remove('hidden');
+        state='playing';cat.y=canvas.height/2;cat.vy=0;cat.rot=0;
+        invincibleTimer=2000; // 2 seconds invincible after revive
+        activeShield=Math.max(activeShield,1000); // Give shield too
+        lastPipe=performance.now()-800;
+        gameLoop();
+        btnWatchAd.style.display='none';
+      });
+    }
+  };}
 document.getElementById('btnBackToMenu').onclick=()=>{if(animFrame)cancelAnimationFrame(animFrame);stopMusic();document.getElementById('menuHighscore').textContent=`Best: ${stats.bestScore}`;document.getElementById('menuCoins').textContent=`💰 ${stats.coins}`;if(stats.dailyStreak>1)document.getElementById('menuStreak').textContent=`🔥 Streak: ${stats.dailyStreak} ngày liên tiếp`;else document.getElementById('menuStreak').textContent='';showScreen('menu');if(!menuAnimFrame)if(typeof updateAllText==='function')updateAllText();
   menuLoop();};
 document.getElementById('btnSkinsBack').onclick=()=>showScreen('menu');
@@ -3751,5 +3773,6 @@ function toggleLang(){
   else location.reload();
 }
 </script>
+<script src="admob.js"></script>
 </body>
 </html>

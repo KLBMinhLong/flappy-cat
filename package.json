@@ -1,0 +1,20 @@
+{
+  "name": "flappy-cat",
+  "version": "1.0.0",
+  "description": "🐱 Flappy Cat - HTML5 mobile game with AdMob",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'Copy web assets to dist' && copy index.html dist\\index.html && copy admob.js dist\\admob.js",
+    "cap:sync": "npx cap sync android",
+    "cap:open": "npx cap open android",
+    "cap:build": "npm run build && npm run cap:sync",
+    "android": "npm run cap:build && npm run cap:open"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KLBMinhLong/flappy-cat.git"
+  },
+  "keywords": ["game", "flappy", "cat", "html5", "mobile", "admob"],
+  "author": "KLB99",
+  "license": "MIT"
+}

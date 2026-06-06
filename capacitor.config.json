@@ -1,0 +1,14 @@
+{
+  "appId": "com.klb99.flappycat",
+  "appName": "Flappy Cat",
+  "webDir": "dist",
+  "plugins": {
+    "AdMob": {
+      "testingDevices": ["YOUR_DEVICE_ID"],
+      "initializeForTesting": true
+    }
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}
