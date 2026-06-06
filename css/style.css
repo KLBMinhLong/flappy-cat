@@ -248,15 +248,15 @@ canvas {
 }
 
 .menu-title {
-  font-size: 42px;
+  font-size: 44px;
   font-weight: 900;
-  background: linear-gradient(135deg, #ffb6d9, #ff69b4, #ff96c8);
+  background: linear-gradient(135deg, #fff0f5, #ff69b4, #ff1493);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  text-shadow: none;
-  letter-spacing: 2px;
-  filter: drop-shadow(0 2px 8px rgba(255,105,180,0.4));
+  letter-spacing: 3px;
+  filter: drop-shadow(0 0 15px rgba(255,20,147,0.6)) drop-shadow(0 0 30px rgba(255,105,180,0.3));
+  text-transform: uppercase;
 }
 
 .menu-subtitle {
