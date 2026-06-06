@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>🐱 Flappy Cat</title>
 <link rel="stylesheet" href="css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 <div id="gameContainer">
@@ -24,7 +25,7 @@
   <!-- MAIN MENU -->
   <div id="menuScreen" class="screen">
     <div class="menu-content">
-      <div class="menu-cat" id="menuCat"><svg viewBox="0 0 120 120" width="120" height="120" class="menu-cat-svg"><polygon points="22,38 8,4 42,28" fill="#ff96c8" class="ear-l"/><polygon points="98,28 112,4 82,38" fill="#ff96c8" class="ear-r"/><polygon points="26,35 14,12 40,30" fill="#ff69b4"/><polygon points="94,30 106,12 78,35" fill="#ff69b4"/><circle cx="60" cy="65" r="40" fill="#ffb6d9"/><ellipse cx="38" cy="52" rx="7" ry="9" fill="#333"/><ellipse cx="82" cy="52" rx="7" ry="9" fill="#333"/><circle cx="41" cy="49" r="3.5" fill="white"/><circle cx="85" cy="49" r="3.5" fill="white"/><circle cx="38" cy="53" r="1.2" fill="white"/><circle cx="82" cy="53" r="1.2" fill="white"/><polygon points="60,62 56,68 64,68" fill="#ff69b4"/><path d="M50 72 Q60 82 70 72" stroke="#ff69b4" stroke-width="2.5" fill="none" stroke-linecap="round"/><line x1="8" y1="60" x2="28" y2="64" stroke="#333" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/><line x1="5" y1="68" x2="28" y2="68" stroke="#333" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/><line x1="8" y1="76" x2="28" y2="72" stroke="#333" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/><line x1="112" y1="60" x2="92" y2="64" stroke="#333" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/><line x1="115" y1="68" x2="92" y2="68" stroke="#333" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/><line x1="112" y1="76" x2="92" y2="72" stroke="#333" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/><ellipse cx="32" cy="70" rx="9" ry="5" fill="rgba(255,150,180,0.35)"/><ellipse cx="88" cy="70" rx="9" ry="5" fill="rgba(255,150,180,0.35)"/><ellipse cx="35" cy="45" rx="12" ry="8" fill="#ffb6d9"/><ellipse cx="85" cy="45" rx="12" ry="8" fill="#ffb6d9"/></svg></div>
+      <div class="menu-cat" id="menuCat"><canvas id="catCanvas3D" width="280" height="280"></canvas></div>
       <h1 class="menu-title">Flappy Cat</h1>
       <p class="menu-subtitle">Tap · Fly · Survive</p>
       <div class="menu-highscore" id="menuHighscore">Best: 0</div>
@@ -1533,6 +1534,372 @@ if(loginReward)setTimeout(()=>showLoginReward(loginReward),500);
 showScreen('menu');
 menuLoop();
 
+})();
+</script>
+
+
+<script>
+// ==================== 3D CAT HEAD (Three.js) ====================
+(function(){
+  const canvas = document.getElementById('catCanvas3D');
+  if (!canvas || typeof THREE === 'undefined') return;
+
+  let scene, camera, renderer, catGroup;
+  let eyeL, eyeR, pupilL, pupilR, earL, earR, nose;
+  let blinkTimer = 0, isBlinking = false, blinkPhase = 0;
+  let mouseX = 0, mouseY = 0;
+  let animId = null;
+  let isActive = false;
+
+  function init() {
+    if (isActive) return;
+    isActive = true;
+
+    // Scene
+    scene = new THREE.Scene();
+
+    // Camera
+    camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+    camera.position.set(0, 0.3, 4.5);
+
+    // Renderer
+    renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setSize(280, 280);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x000000, 0);
+    renderer.shadowMap.enabled = true;
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xfff5ee, 0.8);
+    dirLight.position.set(2, 3, 4);
+    dirLight.castShadow = true;
+    scene.add(dirLight);
+
+    const fillLight = new THREE.DirectionalLight(0xffd4e5, 0.3);
+    fillLight.position.set(-2, 1, 2);
+    scene.add(fillLight);
+
+    const rimLight = new THREE.DirectionalLight(0xaaddff, 0.25);
+    rimLight.position.set(0, -1, -3);
+    scene.add(rimLight);
+
+    // Cat group
+    catGroup = new THREE.Group();
+    scene.add(catGroup);
+
+    // Materials
+    const furMat = new THREE.MeshStandardMaterial({
+      color: 0xffb6d9,
+      roughness: 0.8,
+      metalness: 0.0,
+    });
+
+    const innerEarMat = new THREE.MeshStandardMaterial({
+      color: 0xff69b4,
+      roughness: 0.6,
+      metalness: 0.0,
+    });
+
+    const eyeWhiteMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      roughness: 0.2,
+      metalness: 0.1,
+    });
+
+    const irisMat = new THREE.MeshStandardMaterial({
+      color: 0x4a90d9,
+      roughness: 0.15,
+      metalness: 0.2,
+    });
+
+    const pupilMat = new THREE.MeshStandardMaterial({
+      color: 0x111111,
+      roughness: 0.1,
+      metalness: 0.3,
+    });
+
+    const noseMat = new THREE.MeshStandardMaterial({
+      color: 0xff69b4,
+      roughness: 0.3,
+      metalness: 0.1,
+    });
+
+    // === HEAD ===
+    const headGeo = new THREE.SphereGeometry(1.1, 48, 48);
+    // Slightly squash for wider cheeks
+    headGeo.scale(1.0, 0.95, 0.95);
+    const head = new THREE.Mesh(headGeo, furMat);
+    head.castShadow = true;
+    catGroup.add(head);
+
+    // Cheek puffs
+    const cheekGeo = new THREE.SphereGeometry(0.42, 32, 32);
+    const cheekL = new THREE.Mesh(cheekGeo, furMat);
+    cheekL.position.set(-0.72, -0.15, 0.55);
+    cheekL.scale.set(1, 0.85, 0.8);
+    catGroup.add(cheekL);
+
+    const cheekR = new THREE.Mesh(cheekGeo, furMat);
+    cheekR.position.set(0.72, -0.15, 0.55);
+    cheekR.scale.set(1, 0.85, 0.8);
+    catGroup.add(cheekR);
+
+    // Forehead bump (subtle)
+    const foreheadGeo = new THREE.SphereGeometry(0.55, 32, 32);
+    const forehead = new THREE.Mesh(foreheadGeo, furMat);
+    forehead.position.set(0, 0.45, 0.6);
+    forehead.scale.set(1.1, 0.6, 0.5);
+    catGroup.add(forehead);
+
+    // === EARS ===
+    function createEar(x, rotZ) {
+      const earGroup = new THREE.Group();
+
+      // Outer ear - cone shape
+      const earGeo = new THREE.ConeGeometry(0.42, 0.85, 4);
+      earGeo.rotateZ(Math.PI);
+      const ear = new THREE.Mesh(earGeo, furMat);
+      ear.castShadow = true;
+      earGroup.add(ear);
+
+      // Inner ear
+      const innerGeo = new THREE.ConeGeometry(0.26, 0.55, 4);
+      innerGeo.rotateZ(Math.PI);
+      const inner = new THREE.Mesh(innerGeo, innerEarMat);
+      inner.position.set(0, 0.05, 0.06);
+      inner.scale.set(1, 1, 0.6);
+      earGroup.add(inner);
+
+      earGroup.position.set(x, 0.85, 0.1);
+      earGroup.rotation.z = rotZ;
+      return earGroup;
+    }
+
+    earL = createEar(-0.6, 0.25);
+    earR = createEar(0.6, -0.25);
+    catGroup.add(earL);
+    catGroup.add(earR);
+
+    // === EYES ===
+    function createEye(x) {
+      const eyeGroup = new THREE.Group();
+
+      // Eye white
+      const whiteGeo = new THREE.SphereGeometry(0.26, 32, 32);
+      const white = new THREE.Mesh(whiteGeo, eyeWhiteMat);
+      eyeGroup.add(white);
+
+      // Iris
+      const irisGeo = new THREE.SphereGeometry(0.19, 32, 32);
+      const iris = new THREE.Mesh(irisGeo, irisMat);
+      iris.position.z = 0.12;
+      eyeGroup.add(iris);
+
+      // Pupil
+      const pupGeo = new THREE.SphereGeometry(0.11, 32, 32);
+      const pupil = new THREE.Mesh(pupGeo, pupilMat);
+      pupil.position.z = 0.18;
+      eyeGroup.add(pupil);
+
+      // Shine (specular highlight)
+      const shineGeo = new THREE.SphereGeometry(0.055, 16, 16);
+      const shineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      const shine = new THREE.Mesh(shineGeo, shineMat);
+      shine.position.set(0.06, 0.07, 0.24);
+      eyeGroup.add(shine);
+
+      // Small secondary shine
+      const shine2Geo = new THREE.SphereGeometry(0.025, 12, 12);
+      const shine2 = new THREE.Mesh(shine2Geo, shineMat);
+      shine2.position.set(-0.05, -0.04, 0.24);
+      eyeGroup.add(shine2);
+
+      // Eyelid (for blink)
+      const lidGeo = new THREE.SphereGeometry(0.28, 32, 32, 0, Math.PI * 2, 0, Math.PI * 0.5);
+      const lidMat = new THREE.MeshStandardMaterial({ color: 0xffb6d9, roughness: 0.8 });
+      const lid = new THREE.Mesh(lidGeo, lidMat);
+      lid.rotation.x = Math.PI;
+      lid.position.y = 0.26;
+      lid.visible = false;
+      eyeGroup.add(lid);
+
+      eyeGroup.position.set(x, 0.15, 0.85);
+      return { group: eyeGroup, pupil, lid };
+    }
+
+    const leftEye = createEye(-0.38);
+    const rightEye = createEye(0.38);
+    eyeL = leftEye.group;
+    eyeR = rightEye.group;
+    pupilL = leftEye.pupil;
+    pupilR = rightEye.pupil;
+    catGroup.add(eyeL);
+    catGroup.add(eyeR);
+
+    // Store lid refs for blink
+    eyeL._lid = leftEye.lid;
+    eyeR._lid = rightEye.lid;
+
+    // === NOSE ===
+    const noseGeo = new THREE.SphereGeometry(0.09, 16, 16);
+    noseGeo.scale(1.2, 0.8, 0.6);
+    nose = new THREE.Mesh(noseGeo, noseMat);
+    nose.position.set(0, -0.12, 1.0);
+    catGroup.add(nose);
+
+    // === MOUTH ===
+    const mouthMat = new THREE.MeshStandardMaterial({ color: 0xff69b4, roughness: 0.5 });
+    // W-shape using thin torus segments
+    const mouthCurve1 = new THREE.TorusGeometry(0.12, 0.015, 8, 16, Math.PI * 0.6);
+    const mouth1 = new THREE.Mesh(mouthCurve1, mouthMat);
+    mouth1.position.set(-0.08, -0.22, 0.95);
+    mouth1.rotation.set(0.1, 0.3, 0.2);
+    catGroup.add(mouth1);
+
+    const mouth2 = new THREE.Mesh(mouthCurve1, mouthMat);
+    mouth2.position.set(0.08, -0.22, 0.95);
+    mouth2.rotation.set(0.1, -0.3, -0.2);
+    catGroup.add(mouth2);
+
+    // === WHISKERS ===
+    const whiskerMat = new THREE.MeshBasicMaterial({ color: 0x444444, transparent: true, opacity: 0.5 });
+    function createWhisker(x, y, z, rotY, rotZ) {
+      const geo = new THREE.CylinderGeometry(0.008, 0.004, 0.7, 6);
+      geo.rotateZ(Math.PI / 2);
+      const mesh = new THREE.Mesh(geo, whiskerMat);
+      mesh.position.set(x, y, z);
+      mesh.rotation.y = rotY;
+      mesh.rotation.z = rotZ;
+      return mesh;
+    }
+
+    // Left whiskers
+    catGroup.add(createWhisker(-0.5, -0.1, 0.7, 0.1, 0));
+    catGroup.add(createWhisker(-0.52, -0.18, 0.7, 0.1, -0.15));
+    catGroup.add(createWhisker(-0.48, -0.02, 0.7, 0.1, 0.15));
+
+    // Right whiskers
+    catGroup.add(createWhisker(0.5, -0.1, 0.7, -0.1, 0));
+    catGroup.add(createWhisker(0.52, -0.18, 0.7, -0.1, 0.15));
+    catGroup.add(createWhisker(0.48, -0.02, 0.7, -0.1, -0.15));
+
+    // === BLUSH ===
+    const blushMat = new THREE.MeshBasicMaterial({ color: 0xff8fAB, transparent: true, opacity: 0.3 });
+    const blushGeo = new THREE.CircleGeometry(0.2, 32);
+    const blushL = new THREE.Mesh(blushGeo, blushMat);
+    blushL.position.set(-0.65, -0.15, 0.75);
+    blushL.lookAt(-0.65 - 1, -0.15, 0.75 + 1);
+    catGroup.add(blushL);
+
+    const blushR = new THREE.Mesh(blushGeo, blushMat);
+    blushR.position.set(0.65, -0.15, 0.75);
+    blushR.lookAt(0.65 + 1, -0.15, 0.75 + 1);
+    catGroup.add(blushR);
+
+    // Position cat
+    catGroup.position.y = -0.1;
+
+    // Mouse tracking
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+      mouseY = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+    });
+
+    canvas.addEventListener('mouseleave', () => { mouseX = 0; mouseY = 0; });
+
+    animate();
+  }
+
+  function animate() {
+    if (!isActive) return;
+    animId = requestAnimationFrame(animate);
+    const t = performance.now() * 0.001;
+
+    // Idle bob
+    catGroup.position.y = -0.1 + Math.sin(t * 1.2) * 0.06;
+    catGroup.rotation.z = Math.sin(t * 0.8) * 0.03;
+
+    // Head follows mouse slightly
+    const targetRotY = mouseX * 0.3;
+    const targetRotX = -mouseY * 0.15;
+    catGroup.rotation.y += (targetRotY - catGroup.rotation.y) * 0.05;
+    catGroup.rotation.x += (targetRotX - catGroup.rotation.x) * 0.05;
+
+    // Ear wiggle
+    earL.rotation.z = 0.25 + Math.sin(t * 2) * 0.08;
+    earR.rotation.z = -0.25 + Math.sin(t * 2 + 0.5) * 0.08;
+
+    // Blink
+    blinkTimer += 16;
+    if (!isBlinking && blinkTimer > 3000 + Math.random() * 3000) {
+      isBlinking = true;
+      blinkPhase = 0;
+      blinkTimer = 0;
+    }
+    if (isBlinking) {
+      blinkPhase += 0.15;
+      const blinkAmt = Math.sin(blinkPhase * Math.PI);
+      eyeL.scale.y = 1 - blinkAmt * 0.9;
+      eyeR.scale.y = 1 - blinkAmt * 0.9;
+      if (blinkPhase >= 1) {
+        isBlinking = false;
+        eyeL.scale.y = 1;
+        eyeR.scale.y = 1;
+      }
+    }
+
+    // Eye follow mouse (pupil movement)
+    if (pupilL && pupilR) {
+      const px = mouseX * 0.04;
+      const py = -mouseY * 0.03;
+      pupilL.position.x = px;
+      pupilL.position.y = py + 0.0;
+      pupilR.position.x = px;
+      pupilR.position.y = py + 0.0;
+    }
+
+    renderer.render(scene, camera);
+  }
+
+  function cleanup() {
+    isActive = false;
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+  }
+
+  // Expose for menu system
+  window.initCat3D = init;
+  window.cleanupCat3D = cleanup;
+
+  // Auto-init when menu is shown
+  const observer = new MutationObserver(() => {
+    const menuScreen = document.getElementById('menuScreen');
+    if (menuScreen && !menuScreen.classList.contains('hidden')) {
+      init();
+    } else {
+      cleanup();
+    }
+  });
+
+  // Start observing after DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      const menuScreen = document.getElementById('menuScreen');
+      if (menuScreen) {
+        observer.observe(menuScreen, { attributes: true, attributeFilter: ['class'] });
+        if (!menuScreen.classList.contains('hidden')) init();
+      }
+    });
+  } else {
+    const menuScreen = document.getElementById('menuScreen');
+    if (menuScreen) {
+      observer.observe(menuScreen, { attributes: true, attributeFilter: ['class'] });
+      if (!menuScreen.classList.contains('hidden')) init();
+    }
+  }
 })();
 </script>
 </body>

@@ -1,4 +1,4 @@
-/* ==================== BASE ==================== */
+﻿/* ==================== BASE ==================== */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
@@ -175,34 +175,28 @@ canvas {
   align-items: center;
   animation: catBounce 2s ease-in-out infinite;
   filter: drop-shadow(0 5px 15px rgba(255,150,200,0.4));
+  width: 280px;
+  height: 280px;
+  margin: 0 auto;
 }
 
-.menu-cat-svg {
-  overflow: visible;
+#catCanvas3D {
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.3s ease;
 }
 
-.menu-cat-svg .ear-l {
-  animation: earWiggleL 3s ease-in-out infinite;
-  transform-origin: 30px 30px;
-}
-
-.menu-cat-svg .ear-r {
-  animation: earWiggleR 3s ease-in-out infinite;
-  transform-origin: 90px 30px;
-}
-
-@keyframes earWiggleL {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(-8deg); }
-}
-
-@keyframes earWiggleR {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(8deg); }
+#catCanvas3D:hover {
+  transform: scale(1.05);
 }
 
 @keyframes catBounce {
-  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  25% { transform: translateY(-10px) rotate(0deg); }
+  50% { transform: translateY(0) rotate(2deg); }
+  75% { transform: translateY(-5px) rotate(0deg); }
+}
+
   25% { transform: translateY(-15px) rotate(0deg); }
   50% { transform: translateY(0) rotate(5deg); }
   75% { transform: translateY(-8px) rotate(0deg); }
