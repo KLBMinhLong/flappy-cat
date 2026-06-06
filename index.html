@@ -3424,7 +3424,7 @@ function togglePause(){
   else if(state==='paused')resumeGame();
 }
 window.togglePause=togglePause;
-function toggleLang(){setLang(window.currentLang==='vi'?'en':'vi');}window.toggleLang=toggleLang;
+// toggleLang moved to global scope
 
 // ==================== MENU BACKGROUND ====================
 let menuAnimFrame=null;
@@ -3727,6 +3727,14 @@ menuLoop();
   }else{const m=document.getElementById('menuScreen');if(m)obs.observe(m,{attributes:true,attributeFilter:['class']});tryInit();}
   setTimeout(tryInit,1000);
 })();
+// Global language toggle (outside IIFE for onclick access)
+function toggleLang(){
+  var lang = localStorage.getItem('fc_lang') || 'vi';
+  var newLang = lang === 'vi' ? 'en' : 'vi';
+  localStorage.setItem('fc_lang', newLang);
+  if(typeof setLang === 'function') setLang(newLang);
+  else location.reload();
+}
 </script>
 </body>
 </html>
