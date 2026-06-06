@@ -1539,7 +1539,26 @@ canvas {
 
 
 
-</style>
+
+.menu-lang-btn {
+  pointer-events: auto;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 2px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+  white-space: nowrap;
+}
+
+.menu-lang-btn:hover {
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.4);
+}</style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
 </head>
 <body>
@@ -1563,6 +1582,7 @@ canvas {
     <!-- Top corner buttons -->
     <div class="menu-top-bar">
       <button class="menu-corner-btn" id="btnMissions">📋</button>
+      <button class="menu-lang-btn" id="langToggle" onclick="toggleLang()">🇻🇳</button>
       <button class="menu-corner-btn" id="btnProfile">👤</button>
     </div>
     <div class="menu-content">
@@ -1608,11 +1628,11 @@ canvas {
     </div>
     <div class="settings-list">
       <div class="setting-item">
-        <span>🔊 Âm thanh</span>
+        <span>🔊 <span class="lang-text" data-lang="sound">Âm thanh</span></span>
         <label class="toggle"><input type="checkbox" id="sfxToggle" checked><span class="slider"></span></label>
       </div>
       <div class="setting-item">
-        <span>🎵 Nhạc nền</span>
+        <span>🎵 <span class="lang-text" data-lang="music">Nhạc nền</span></span>
         <label class="toggle"><input type="checkbox" id="musicToggle" checked><span class="slider"></span></label>
       </div>
       <div class="setting-item">
@@ -1620,7 +1640,7 @@ canvas {
         <input type="range" id="volumeSlider" min="0" max="100" value="70" class="range-slider">
       </div>
       <div class="setting-item">
-        <span>📳 Rung (mobile)</span>
+        <span>📳 <span class="lang-text" data-lang="vibrate">Rung</span></span>
         <label class="toggle"><input type="checkbox" id="vibrateToggle" checked><span class="slider"></span></label>
       </div>
 
@@ -1633,7 +1653,7 @@ canvas {
   <div id="achievementsScreen" class="screen hidden">
     <div class="screen-header">
       <button class="btn-back" id="btnAchievementsBack">←</button>
-      <h2>🏆 Thành tích</h2>
+      <h2 id="achievementsTitle">🏆 Thành tích</h2>
     </div>
     <div class="achievements-list" id="achievementsList"></div>
   </div>
@@ -1641,9 +1661,9 @@ canvas {
   <!-- GAME OVER -->
   <div id="gameOverScreen" class="screen hidden">
     <div class="gameover-content">
-      <h1>😿 Rớt rồi!</h1>
+      <h1 id="gameOverTitle">😿 Rớt rồi!</h1>
       <h2 id="finalScore">0</h2>
-      <p>điểm</p>
+      <p id="gameOverPoints">điểm</p>
       <div class="stats">
         <div class="stat"><div class="val" id="statBest">0</div><div class="lbl">Best</div></div>
         <div class="stat"><div class="val" id="statPipes">0</div><div class="lbl">Ống</div></div>
@@ -1677,7 +1697,7 @@ canvas {
   <div id="modesScreen" class="screen hidden">
     <div class="screen-header">
       <button class="btn-back" id="btnModesBack">←</button>
-      <h2>🎪 Chế độ chơi</h2>
+      <h2 id="modesTitle">🎪 Chế độ chơi</h2>
     </div>
     <div class="modes-list" id="modesList">
       <div class="mode-card" data-mode="classic">
@@ -1766,6 +1786,178 @@ canvas {
 </div>
 
 <script>
+// ==================== LANGUAGE SYSTEM ====================
+let currentLang = localStorage.getItem('fc_lang') || 'vi';
+const LANG = {
+  vi: {
+    play: '🎮 Chơi',
+    modes: '🎪 Chế độ',
+    history: '📜 Lịch sử',
+    skins: '🎨 Skins',
+    leaderboard: '🏆 Xếp hạng',
+    missions: '📋 Nhiệm vụ',
+    settings: '⚙️ Cài đặt',
+    achievements: '🏆 Thành tích',
+    profile: '👤 Hồ sơ',
+    best: 'Best:',
+    coins: '💰',
+    tapToStart: 'Nhấn để bắt đầu',
+    tapFlySurvive: 'Tap · Fly · Survive',
+    paused: 'TẠM DỪNG',
+    tapToResume: 'Nhấn để tiếp tục',
+    gameOver: '😿 Rớt rồi!',
+    points: 'điểm',
+    restart: '🔄 Chơi lại',
+    share: '📤 Chia sẻ',
+    menu: '🏠 Menu',
+    back: '←',
+    classic: 'Classic',
+    hard: 'Hard Mode',
+    speed: 'Speed Run',
+    tiny: 'Tiny Cat',
+    night: 'Night Mode',
+    defaultMode: 'Mặc định',
+    selected: '✓ Đang chọn',
+    choose: 'Chọn',
+    locked: '🔒',
+    unlocked: '✅ Đã sở hữu',
+    notUnlocked: '🔒',
+    buy: 'Mua',
+    level: 'Lv.',
+    needLevel: 'Cần đạt Lv.',
+    toUnlock: 'để mở',
+    sound: '🔊 Âm thanh',
+    music: '🎵 Nhạc nền',
+    volume: '🔉 Âm lượng',
+    vibrate: '📳 Rung (mobile)',
+    selectMusic: '🎵 Chọn nhạc nền',
+    dailyMissions: '📋 Nhiệm vụ hàng ngày',
+    claim: 'Nhận',
+    claimed: 'Đã nhận',
+    score: 'Ống',
+    powerups: 'Power-up',
+    combo: 'Combo',
+    pipes: 'Ống',
+    games: 'Lần chơi',
+    history_title: '📜 Lịch sử',
+    leaderboard_title: '🏆 Bảng xếp hạng',
+    all: 'Tất cả',
+    daily: 'Hôm nay',
+    achievements_title: '🏆 Thành tích',
+    profile_title: '👤 Hồ sơ',
+    modes_title: '🎪 Chế độ chơi',
+    skins_title: '🎨 Skins',
+    settings_title: '⚙️ Cài đặt',
+    missions_title: '📋 Nhiệm vụ',
+    toast_unlocked: 'Mở khóa thành công!',
+    toast_levelup: 'Level Up!',
+    toast_reached: 'Đạt',
+    lang_label: '🇻🇳 Tiếng Việt',
+  },
+  en: {
+    play: '🎮 Play',
+    modes: '🎪 Modes',
+    history: '📜 History',
+    skins: '🎨 Skins',
+    leaderboard: '🏆 Leaderboard',
+    missions: '📋 Missions',
+    settings: '⚙️ Settings',
+    achievements: '🏆 Achievements',
+    profile: '👤 Profile',
+    best: 'Best:',
+    coins: '💰',
+    tapToStart: 'Tap to Start',
+    tapFlySurvive: 'Tap · Fly · Survive',
+    paused: 'PAUSED',
+    tapToResume: 'Tap to Resume',
+    gameOver: '😿 Game Over!',
+    points: 'points',
+    restart: '🔄 Restart',
+    share: '📤 Share',
+    menu: '🏠 Menu',
+    back: '←',
+    classic: 'Classic',
+    hard: 'Hard Mode',
+    speed: 'Speed Run',
+    tiny: 'Tiny Cat',
+    night: 'Night Mode',
+    defaultMode: 'Default',
+    selected: '✓ Selected',
+    choose: 'Select',
+    locked: '🔒',
+    unlocked: '✅ Owned',
+    notUnlocked: '🔒',
+    buy: 'Buy',
+    level: 'Lv.',
+    needLevel: 'Reach Lv.',
+    toUnlock: 'to unlock',
+    sound: '🔊 Sound',
+    music: '🎵 Music',
+    volume: '🔊 Volume',
+    vibrate: '📳 Vibrate (mobile)',
+    selectMusic: '🎵 Select Music',
+    dailyMissions: '📋 Daily Missions',
+    claim: 'Claim',
+    claimed: 'Claimed',
+    score: 'Pipes',
+    powerups: 'Power-ups',
+    combo: 'Combo',
+    pipes: 'Pipes',
+    games: 'Games',
+    history_title: '📜 History',
+    leaderboard_title: '🏆 Leaderboard',
+    all: 'All',
+    daily: 'Today',
+    achievements_title: '🏆 Achievements',
+    profile_title: '👤 Profile',
+    modes_title: '🎪 Game Modes',
+    skins_title: '🎨 Skins',
+    settings_title: '⚙️ Settings',
+    missions_title: '📋 Missions',
+    toast_unlocked: 'Unlocked!',
+    toast_levelup: 'Level Up!',
+    toast_reached: 'Reached',
+    lang_label: '🇬🇧 English',
+  }
+};
+function t(key) { return LANG[currentLang][key] || LANG['vi'][key] || key; }
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('fc_lang', lang);
+  updateAllText();
+}
+function updateAllText() {
+  const el = (id) => document.getElementById(id);
+  // Menu buttons
+  const btnMap = {
+    'btnPlay': 'play', 'btnHistory': 'history', 'btnSkins': 'skins',
+    'btnLeaderboard': 'leaderboard', 'btnSettings': 'settings',
+    'btnAchievements': 'achievements', 'btnRestart': 'restart',
+    'btnShare': 'share', 'btnBackToMenu': 'menu'
+  };
+  Object.entries(btnMap).forEach(([id, key]) => {
+    const e = el(id);
+    if (e) e.textContent = t(key);
+  });
+  // Menu text
+  if (el('menuHighscore')) el('menuHighscore').textContent = t('best') + ' ' + (window.stats ? stats.bestScore : '0');
+  const sub = document.querySelector('.menu-subtitle');
+  if (sub) sub.textContent = t('tapFlySurvive');
+  // Language toggle
+  if (el('langToggle')) el('langToggle').textContent = currentLang==='vi' ? '🇻🇳' : '🇬🇧';
+  // Screen titles
+  if (el('modesTitle')) el('modesTitle').textContent = '🎪 ' + t('modes_title').replace('🎪 ','');
+  if (el('achievementsTitle')) el('achievementsTitle').textContent = '🏆 ' + t('achievements_title').replace('🏆 ','');
+  // Settings
+  document.querySelectorAll('.lang-text').forEach(e => {
+    const key = e.dataset.lang;
+    if (key && LANG[currentLang][key]) e.textContent = LANG[currentLang][key];
+  });
+  // Game over
+  if (el('gameOverTitle')) el('gameOverTitle').textContent = t('gameOver');
+  if (el('gameOverPoints')) el('gameOverPoints').textContent = t('points');
+}
+
 // ==================== FLAPPY CAT - ALL IN ONE ====================
 (function() {
 'use strict';
@@ -2447,6 +2639,8 @@ function gameOver(){
   },300);
   // update UI
   document.getElementById('finalScore').textContent=score;
+    document.getElementById('gameOverTitle').textContent=t('gameOver');
+    document.getElementById('gameOverPoints').textContent=t('points');
   document.getElementById('roastMsg').innerHTML=`<span class="roast-cat">${roast.cat}</span><span class="roast-text ${roast.cls}">"${roast.msg}"</span>`;
   document.getElementById('statBest').textContent=stats.bestScore;
   document.getElementById('statPipes').textContent=pipesCleared;
@@ -3016,7 +3210,8 @@ document.getElementById('btnProfileBack').onclick=()=>showScreen('menu');
 document.getElementById('btnModesBack').onclick=()=>showScreen('menu');
 document.getElementById('btnHistoryBack').onclick=()=>showScreen('menu');
 
-// Top bar corner buttons
+updateAllText();
+    // Top bar corner buttons
 var missionsBtn=document.querySelector('.menu-corner-btn[id="btnMissions"]');
 if(missionsBtn)missionsBtn.onclick=function(){showScreen('missions');renderMissions();};
 var profileBtn=document.querySelector('.menu-corner-btn[id="btnProfile"]');
@@ -3089,11 +3284,11 @@ function drawReadyOverlay(){
   ctx.save();
   ctx.translate(canvas.width/2,canvas.height*0.42);
   ctx.scale(pulse,pulse);
-  ctx.fillText('Nhấn để bắt đầu',0,0);
+  ctx.fillText(t('tapToStart'),0,0);
   ctx.restore();
   ctx.font=Math.round(canvas.width*0.035)+'px "Segoe UI",system-ui,sans-serif';
   ctx.fillStyle='rgba(255,255,255,0.5)';
-  ctx.fillText('Tap · Fly · Survive',canvas.width/2,canvas.height*0.5);
+  ctx.fillText(t('tapFlySurvive'),canvas.width/2,canvas.height*0.5);
   ctx.restore();
 }
 
@@ -3105,10 +3300,10 @@ function drawPauseOverlay(){
   ctx.font='bold '+Math.round(canvas.width*0.08)+'px "Segoe UI",system-ui,sans-serif';
   ctx.textAlign='center';
   ctx.textBaseline='middle';
-  ctx.fillText('TẠM DỪNG',canvas.width/2,canvas.height*0.38);
+  ctx.fillText(t('paused'),canvas.width/2,canvas.height*0.38);
   ctx.font=Math.round(canvas.width*0.04)+'px "Segoe UI",system-ui,sans-serif';
   ctx.fillStyle='rgba(255,255,255,0.6)';
-  ctx.fillText('Nhấn để tiếp tục',canvas.width/2,canvas.height*0.48);
+  ctx.fillText(t('tapToResume'),canvas.width/2,canvas.height*0.48);
   ctx.restore();
 }
 
@@ -3131,6 +3326,7 @@ function togglePause(){
   else if(state==='paused')resumeGame();
 }
 window.togglePause=togglePause;
+function toggleLang(){setLang(currentLang==='vi'?'en':'vi');}window.toggleLang=toggleLang;
 
 // ==================== MENU BACKGROUND ====================
 let menuAnimFrame=null;
