@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>🐱 Flappy Cat</title>
 <link rel="stylesheet" href="css/style.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
 </head>
 <body>
 <div id="gameContainer">
@@ -25,7 +25,7 @@
   <!-- MAIN MENU -->
   <div id="menuScreen" class="screen">
     <div class="menu-content">
-      <div class="menu-cat" id="menuCat"><canvas id="catCanvas3D" width="280" height="280"></canvas></div>
+      <div class="menu-cat" id="menuCat"><canvas id="catCanvas3D" width="400" height="400"></canvas></div>
       <h1 class="menu-title">Flappy Cat</h1>
       <p class="menu-subtitle">Tap · Fly · Survive</p>
       <div class="menu-highscore" id="menuHighscore">Best: 0</div>
@@ -1639,7 +1639,7 @@ menuLoop();
     camera.position.set(0, 0.2, 4.8);
 
     renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-    renderer.setSize(280, 280);
+    renderer.setSize(400, 400);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setClearColor(0x000000, 0);
     renderer.shadowMap.enabled = true;
@@ -2018,21 +2018,36 @@ menuLoop();
   window.cleanupCat3D = cleanup;
 
   // Auto-init when menu shown
+  function tryInit() {
+    const menu = document.getElementById('menuScreen');
+    if (menu && !menu.classList.contains('hidden')) {
+      try { init(); } catch(e) { console.warn('3D cat init failed:', e); }
+    }
+  }
+
   const observer = new MutationObserver(() => {
     const menu = document.getElementById('menuScreen');
-    if (menu && !menu.classList.contains('hidden')) init();
-    else cleanup();
+    if (menu && !menu.classList.contains('hidden')) {
+      if (!isActive) tryInit();
+    } else {
+      cleanup();
+    }
   });
 
+  // Init on load + delayed fallback
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       const menu = document.getElementById('menuScreen');
-      if (menu) { observer.observe(menu, { attributes: true, attributeFilter: ['class'] }); if (!menu.classList.contains('hidden')) init(); }
+      if (menu) observer.observe(menu, { attributes: true, attributeFilter: ['class'] });
+      tryInit();
     });
   } else {
     const menu = document.getElementById('menuScreen');
-    if (menu) { observer.observe(menu, { attributes: true, attributeFilter: ['class'] }); if (!menu.classList.contains('hidden')) init(); }
+    if (menu) observer.observe(menu, { attributes: true, attributeFilter: ['class'] });
+    tryInit();
   }
+  // Fallback: try again after 1s in case Three.js loaded late
+  setTimeout(tryInit, 1000);
 })();
 </script>
 </body>
