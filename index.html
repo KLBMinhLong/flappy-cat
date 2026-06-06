@@ -1787,18 +1787,14 @@ function resize() {
   const container = document.getElementById('gameContainer');
   const w = container.clientWidth || window.innerWidth || 460;
   const h = container.clientHeight || window.innerHeight || 820;
-  if (w > 0 && h > 0) {
+  if (w > 0 && h > 0 && canvas.width !== w) {
     canvas.width = w;
     canvas.height = h;
   }
 }
 resize();
 window.addEventListener('resize', resize);
-// Multiple resize attempts for iframe loading
 requestAnimationFrame(resize);
-setTimeout(resize, 100);
-setTimeout(resize, 500);
-setTimeout(resize, 1000);
 
 // ==================== AUDIO ====================
 let audioCtx = null, masterGain = null;
