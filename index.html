@@ -1714,7 +1714,7 @@ canvas {
           <div class="mode-name">Hard Mode</div>
           <div class="mode-desc">Ống nhanh hơn, khe hẹp hơn, coin x2</div>
         </div>
-        <div class="mode-tag locked">🔒 Lv.5</div>
+        <div class="mode-tag locked">🔒 t('level')5</div>
       </div>
       <div class="mode-card" data-mode="speed">
         <div class="mode-icon">⚡</div>
@@ -1722,7 +1722,7 @@ canvas {
           <div class="mode-name">Speed Run</div>
           <div class="mode-desc">Tốc độ tăng cực nhanh, coin x3</div>
         </div>
-        <div class="mode-tag locked">🔒 Lv.10</div>
+        <div class="mode-tag locked">🔒 t('level')10</div>
       </div>
       <div class="mode-card" data-mode="tiny">
         <div class="mode-icon">🐁</div>
@@ -1730,7 +1730,7 @@ canvas {
           <div class="mode-name">Tiny Cat</div>
           <div class="mode-desc">Mèo siêu nhỏ, né dễ hơn nhưng khó căn</div>
         </div>
-        <div class="mode-tag locked">🔒 Lv.3</div>
+        <div class="mode-tag locked">🔒 t('level')3</div>
       </div>
       <div class="mode-card" data-mode="night">
         <div class="mode-icon">🌙</div>
@@ -1738,7 +1738,7 @@ canvas {
           <div class="mode-name">Night Mode</div>
           <div class="mode-desc">Tối mịt, chỉ thấy đèn sáng phía trước</div>
         </div>
-        <div class="mode-tag locked">🔒 Lv.8</div>
+        <div class="mode-tag locked">🔒 t('level')8</div>
       </div>
     </div>
   </div>
@@ -1751,7 +1751,7 @@ canvas {
     </div>
     <div class="profile-content">
       <div class="profile-avatar">🐱</div>
-      <div class="profile-level" id="profileLevel">Lv. 1</div>
+      <div class="profile-level" id="profileLevel">t('level') 1</div>
       <div class="profile-xp-bar"><div class="profile-xp-fill" id="profileXpFill"></div></div>
       <div class="profile-xp-text" id="profileXpText">0 / 100 XP</div>
       <div class="profile-stats" id="profileStats"></div>
@@ -1823,8 +1823,8 @@ const LANG = {
     unlocked: '✅ Đã sở hữu',
     notUnlocked: '🔒',
     buy: 'Mua',
-    level: 'Lv.',
-    needLevel: 'Cần đạt Lv.',
+    level: 't('level')',
+    needLevel: 'Cần đạt t('level')',
     toUnlock: 'để mở',
     sound: '🔊 Âm thanh',
     music: '🎵 Nhạc nền',
@@ -1832,7 +1832,7 @@ const LANG = {
     vibrate: '📳 Rung (mobile)',
     selectMusic: '🎵 Chọn nhạc nền',
     dailyMissions: '📋 Nhiệm vụ hàng ngày',
-    claim: 'Nhận',
+    claim: 't('claim')',
     claimed: 'Đã nhận',
     score: 'Ống',
     powerups: 'Power-up',
@@ -1854,7 +1854,7 @@ const LANG = {
     toast_reached: 'Đạt',
     lang_label: '🇻🇳 Tiếng Việt',
     pipes: 'Ống', powerups: 'Power-up', coins_label: 'Coin', combo_label: 'Combo',
-    games_played: 'Lần chơi', claim: 'Nhận', claimed: 'Đã nhận',
+    games_played: 'Lần chơi', claim: 't('claim')', claimed: 'Đã nhận',
     unlock_success: 'Mở khóa thành công!', levelup: 'Level Up!',
     reached: 'Đạt', to_unlock: 'để mở', not_unlocked: 'Chưa mở khóa',
     owned: 'Đã sở hữu', buy: 'Mua', coin: 'coin',
@@ -1906,8 +1906,8 @@ const LANG = {
     unlocked: '✅ Owned',
     notUnlocked: '🔒',
     buy: 'Buy',
-    level: 'Lv.',
-    needLevel: 'Reach Lv.',
+    level: 't('level')',
+    needLevel: 'Reach t('level')',
     toUnlock: 'to unlock',
     sound: '🔊 Sound',
     music: '🎵 Music',
@@ -2870,6 +2870,7 @@ function updateDailyStreak(){
 }
 
 // ==================== DAILY MISSIONS ====================
+const MISSIONS_EN={'daily_score15':{name:'Warm Up',desc:'Score 15 in 1 game'},'daily_score30':{name:'Intermediate',desc:'Score 30 in 1 game'},'daily_pipes20':{name:'Pipe Runner',desc:'Pass 20 pipes'},'daily_combo5':{name:'Combo Master',desc:'Get combo x5'},'daily_powerup3':{name:'Collector',desc:'Collect 3 power-ups'},'daily_games3':{name:'Active Player',desc:'Play 3 games'}};
 const MISSIONS=[
   {id:'daily_score15',name:'Khởi động nhẹ',desc:'Đạt 15 điểm trong 1 lần',icon:'🎯',check:(s,g)=>g.score>=15,reward:15},
   {id:'daily_score30',name:'Trung cấp',desc:'Đạt 30 điểm trong 1 lần',icon:'🎯',check:(s,g)=>g.score>=30,reward:30},
@@ -2915,24 +2916,28 @@ function claimMission(missionId){
   saveDailyMissions(completed);
   stats.coins+=m.reward;
   saveStats();
-  showToast('💰','Nhận thưởng!',m.icon+' +'+m.reward+' coin',2500);
+  showToast('💰','t('claim') thưởng!',m.icon+' +'+m.reward+' coin',2500);
   renderMissions();
 }
 function renderMissions(){
   const list=document.getElementById('missionsList');
   const completed=getDailyMissions();
+  const isEn=(window.currentLang||'vi')==='en';
   list.innerHTML='';
   for(const m of MISSIONS){
     const status=completed[m.id]||'pending';
+    const mt=isEn&&MISSIONS_EN[m.id]?MISSIONS_EN[m.id]:null;
+    const mname=mt?mt.name:m.name;
+    const mdesc=mt?mt.desc:m.desc;
     const item=document.createElement('div');
     item.className='mission-item'+(status==='done'?' completed':'')+(status==='claimed'?' claimed':'');
     item.innerHTML=`
       <div class="mission-icon">${m.icon}</div>
       <div class="mission-info">
-        <div class="mission-name">${m.name}</div>
-        <div class="mission-desc">${m.desc}</div>
+        <div class="mission-name">${mname}</div>
+        <div class="mission-desc">${mdesc}</div>
         ${status==='pending'?'<div class="mission-progress"><div class="mission-progress-bar" style="width:0%"></div></div>':''}
-        ${status==='done'?'<button class="mission-claim-btn" data-mission="${m.id}">Nhận thưởng</button>':''}
+        ${status==='done'?'<button class="mission-claim-btn" data-mission="${m.id}">t('claim') thưởng</button>':''}
         ${status==='claimed'?'<div style="color:#6b7280;font-size:11px">✅ Đã nhận</div>':''}
       </div>
       <div class="mission-reward">
@@ -2954,14 +2959,14 @@ function addXp(amount){
   while(stats.xp>=getXpForLevel(stats.level)){
     stats.xp-=getXpForLevel(stats.level);
     stats.level++;
-    showToast('🎊',t('levelup'),`Đạt Lv.${stats.level}!`,3000);
+    showToast('🎊',t('levelup'),`Đạt t('level')${stats.level}!`,3000);
   }
   saveStats();
 }
 function renderProfile(){
   const xpNeeded=getXpForLevel(stats.level);
   const pct=Math.min(100,Math.round(stats.xp/xpNeeded*100));
-  document.getElementById('profileLevel').textContent=`Lv. ${stats.level}`;
+  document.getElementById('profileLevel').textContent=`t('level') ${stats.level}`;
   document.getElementById('profileXpFill').style.width=pct+'%';
   document.getElementById('profileXpText').textContent=`${stats.xp} / ${xpNeeded} XP`;
   const avgScore=stats.totalGames>0?Math.round(stats.bestScore/stats.totalGames*10)/10:0;
@@ -3011,12 +3016,12 @@ function showLoginReward(rewardData){
   banner.innerHTML=`
     <div class="login-reward-title">🎁 Quà đăng nhập ngày ${rewardData.day}!</div>
     <div class="login-reward-days">${daysHtml}</div>
-    <button class="login-reward-btn" id="claimLoginReward">Nhận +${rewardData.reward}💰</button>
+    <button class="login-reward-btn" id="claimLoginReward">t('claim') +${rewardData.reward}💰</button>
   `;
   document.getElementById('gameContainer').appendChild(banner);
   document.getElementById('claimLoginReward').onclick=()=>{
     banner.remove();
-    showToast('💰','Nhận thành công!',`+${rewardData.reward} coin`,2500);
+    showToast('💰','t('claim') thành công!',`+${rewardData.reward} coin`,2500);
   };
 }
 
@@ -3036,7 +3041,7 @@ function renderModes(){
     }
     card.onclick=()=>{
       if(!unlocked){
-        showToast('🔒','Chưa mở khóa!',`Cần đạt Lv.${modeData.unlock} để mở`,2500);
+        showToast('🔒','Chưa mở khóa!',`Cần đạt t('level')${modeData.unlock} để mở`,2500);
         return;
       }
       currentMode=mode;
