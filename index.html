@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🐱 Flappy Cat</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="gameContainer">
+  <canvas id="game"></canvas>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div id="score">0</div>
+    <div id="combo"></div>
+    <div class="powerup-bar">
+      <div class="pu-icon" id="puShield">🛡️</div>
+      <div class="pu-icon" id="puSlow">⏳</div>
+      <div class="pu-icon" id="puTiny">🐁</div>
+    </div>
+  </div>
+
+  <!-- MAIN MENU -->
+  <div id="menuScreen" class="screen">
+    <div class="menu-content">
+      <div class="menu-cat">🐱</div>
+      <h1 class="menu-title">Flappy Cat</h1>
+      <p class="menu-subtitle">Tap · Fly · Survive</p>
+      <div class="menu-highscore" id="menuHighscore">Best: 0</div>
+      <div class="menu-coins" id="menuCoins">💰 0</div>
+      <div class="menu-streak" id="menuStreak"></div>
+      <div class="menu-buttons">
+        <button class="btn btn-play" id="btnPlay">🎮 Chơi</button>
+        <button class="btn btn-daily" id="btnDaily">🎯 Thử thách ngày</button>
+        <button class="btn btn-modes" id="btnModes">🎪 Chế độ</button>
+        <button class="btn btn-skins" id="btnSkins">🎨 Skins</button>
+        <button class="btn btn-leaderboard" id="btnLeaderboard">🏆 Xếp hạng</button>
+        <button class="btn btn-missions" id="btnMissions">📋 Nhiệm vụ</button>
+        <button class="btn btn-settings" id="btnSettings">⚙️ Cài đặt</button>
+        <button class="btn btn-achievements" id="btnAchievements">🏆 Thành tích</button>
+        <button class="btn btn-profile" id="btnProfile">👤 Hồ sơ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SKINS SCREEN -->
+  <div id="skinsScreen" class="screen hidden">
+    <div class="screen-header">
+      <button class="btn-back" id="btnSkinsBack">←</button>
+      <h2>🎨 Skins</h2>
+    </div>
+    <div class="skins-grid" id="skinsGrid"></div>
+    <div class="skin-preview" id="skinPreview">
+      <canvas id="skinPreviewCanvas" width="48" height="48"></canvas>
+      <div class="skin-info">
+        <div class="skin-name" id="skinName">Default Cat</div>
+        <div class="skin-desc" id="skinDesc">Mèo hồng dễ thương</div>
+        <div class="skin-unlock" id="skinUnlock"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS SCREEN -->
+  <div id="settingsScreen" class="screen hidden">
+    <div class="screen-header">
+      <button class="btn-back" id="btnSettingsBack">←</button>
+      <h2>⚙️ Cài đặt</h2>
+    </div>
+    <div class="settings-list">
+      <div class="setting-item">
+        <span>🔊 Âm thanh</span>
+        <label class="toggle"><input type="checkbox" id="sfxToggle" checked><span class="slider"></span></label>
+      </div>
+      <div class="setting-item">
+        <span>🎵 Nhạc nền</span>
+        <label class="toggle"><input type="checkbox" id="musicToggle" checked><span class="slider"></span></label>
+      </div>
+      <div class="setting-item">
+        <span>🔉 Âm lượng</span>
+        <input type="range" id="volumeSlider" min="0" max="100" value="70" class="range-slider">
+      </div>
+      <div class="setting-item">
+        <span>📳 Rung (mobile)</span>
+        <label class="toggle"><input type="checkbox" id="vibrateToggle" checked><span class="slider"></span></label>
+      </div>
+
+      <div class="music-section-title">🎵 Chọn nhạc nền</div>
+      <div class="music-list" id="musicList"></div>
+    </div>
+  </div>
+
+  <!-- ACHIEVEMENTS SCREEN -->
+  <div id="achievementsScreen" class="screen hidden">
+    <div class="screen-header">
+      <button class="btn-back" id="btnAchievementsBack">←</button>
+      <h2>🏆 Thành tích</h2>
+    </div>
+    <div class="achievements-list" id="achievementsList"></div>
+  </div>
+
+  <!-- GAME OVER -->
+  <div id="gameOverScreen" class="screen hidden">
+    <div class="gameover-content">
+      <h1>😿 Rớt rồi!</h1>
+      <h2 id="finalScore">0</h2>
+      <p>điểm</p>
+      <div class="stats">
+        <div class="stat"><div class="val" id="statBest">0</div><div class="lbl">Best</div></div>
+        <div class="stat"><div class="val" id="statPipes">0</div><div class="lbl">Ống</div></div>
+        <div class="stat"><div class="val" id="statPowerups">0</div><div class="lbl">Power-up</div></div>
+        <div class="stat"><div class="val" id="statCoins">0</div><div class="lbl">💰 Coin</div></div>
+      </div>
+      <div id="bestLabel" class="best"></div>
+      <div class="gameover-buttons">
+        <button class="btn btn-play" id="btnRestart">🔄 Chơi lại</button>
+        <button class="btn btn-share" id="btnShare">📤 Chia sẻ</button>
+        <button class="btn btn-menu" id="btnBackToMenu">🏠 Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD SCREEN -->
+  <div id="leaderboardScreen" class="screen hidden">
+    <div class="screen-header">
+      <button class="btn-back" id="btnLeaderboardBack">←</button>
+      <h2>🏆 Bảng xếp hạng</h2>
+    </div>
+    <div class="lb-tabs">
+      <button class="lb-tab active" data-tab="all">Tất cả</button>
+      <button class="lb-tab" data-tab="daily">Hôm nay</button>
+    </div>
+    <div class="lb-list" id="lbList"></div>
+  </div>
+
+  <!-- MODES SCREEN -->
+  <div id="modesScreen" class="screen hidden">
+    <div class="screen-header">
+      <button class="btn-back" id="btnModesBack">←</button>
+      <h2>🎪 Chế độ chơi</h2>
+    </div>
+    <div class="modes-list" id="modesList">
+      <div class="mode-card" data-mode="classic">
+        <div class="mode-icon">🎮</div>
+        <div class="mode-info">
+          <div class="mode-name">Classic</div>
+          <div class="mode-desc">Chế độ mặc định, phù hợp mọi người</div>
+        </div>
+        <div class="mode-tag">Mặc định</div>
+      </div>
+      <div class="mode-card" data-mode="hard">
+        <div class="mode-icon">💀</div>
+        <div class="mode-info">
+          <div class="mode-name">Hard Mode</div>
+          <div class="mode-desc">Ống nhanh hơn, khe hẹp hơn, coin x2</div>
+        </div>
+        <div class="mode-tag locked">🔒 Lv.5</div>
+      </div>
+      <div class="mode-card" data-mode="speed">
+        <div class="mode-icon">⚡</div>
+        <div class="mode-info">
+          <div class="mode-name">Speed Run</div>
+          <div class="mode-desc">Tốc độ tăng cực nhanh, coin x3</div>
+        </div>
+        <div class="mode-tag locked">🔒 Lv.10</div>
+      </div>
+      <div class="mode-card" data-mode="tiny">
+        <div class="mode-icon">🐁</div>
+        <div class="mode-info">
+          <div class="mode-name">Tiny Cat</div>
+          <div class="mode-desc">Mèo siêu nhỏ, né dễ hơn nhưng khó căn</div>
+        </div>
+        <div class="mode-tag locked">🔒 Lv.3</div>
+      </div>
+      <div class="mode-card" data-mode="night">
+        <div class="mode-icon">🌙</div>
+        <div class="mode-info">
+          <div class="mode-name">Night Mode</div>
+          <div class="mode-desc">Tối mịt, chỉ thấy đèn sáng phía trước</div>
+        </div>
+        <div class="mode-tag locked">🔒 Lv.8</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE SCREEN -->
+  <div id="profileScreen" class="screen hidden">
+    <div class="screen-header">
+      <button class="btn-back" id="btnProfileBack">←</button>
+      <h2>👤 Hồ sơ</h2>
+    </div>
+    <div class="profile-content">
+      <div class="profile-avatar">🐱</div>
+      <div class="profile-level" id="profileLevel">Lv. 1</div>
+      <div class="profile-xp-bar"><div class="profile-xp-fill" id="profileXpFill"></div></div>
+      <div class="profile-xp-text" id="profileXpText">0 / 100 XP</div>
+      <div class="profile-stats" id="profileStats"></div>
+    </div>
+  </div>
+
+  <!-- MISSIONS SCREEN -->
+  <div id="missionsScreen" class="screen hidden">
+    <div class="screen-header">
+      <button class="btn-back" id="btnMissionsBack">←</button>
+      <h2>📋 Nhiệm vụ</h2>
+    </div>
+    <div class="missions-list" id="missionsList"></div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast">
+    <div class="toast-icon" id="toastIcon">🎉</div>
+    <div class="toast-title" id="toastTitle">Mở khóa thành công!</div>
+    <div class="toast-desc" id="toastDesc"></div>
+    <div class="toast-hint">Nhấn để đóng</div>
+  </div>
+</div>
+
+<script>
+// ==================== FLAPPY CAT - ALL IN ONE ====================
+(function() {
+'use strict';
+
+// ==================== UTILS ====================
+function lerp(a, b, t) { return a + (b - a) * t; }
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+function dist(x1, y1, x2, y2) { return Math.sqrt((x1-x2)**2 + (y1-y2)**2); }
+
+// ==================== CANVAS ====================
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+function resize() {
+  const container = document.getElementById('gameContainer');
+  canvas.width = container.clientWidth;
+  canvas.height = container.clientHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ==================== AUDIO ====================
+let audioCtx = null, masterGain = null;
+let sfxEnabled = true, musicEnabled = true, volume = 0.7;
+
+function initAudio() {
+  if (audioCtx) return;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  audioCtx = new AC();
+  masterGain = audioCtx.createGain();
+  masterGain.connect(audioCtx.destination);
+  masterGain.gain.value = volume;
+}
+
+function playSound(type) {
+  if (!sfxEnabled) return;
+  initAudio();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain); gain.connect(masterGain);
+  const t = audioCtx.currentTime;
+  switch(type) {
+    case 'flap':
+      osc.type='sine'; osc.frequency.setValueAtTime(500,t);
+      osc.frequency.exponentialRampToValueAtTime(700,t+0.08);
+      gain.gain.setValueAtTime(0.15,t); gain.gain.exponentialRampToValueAtTime(0.001,t+0.1);
+      osc.start(t); osc.stop(t+0.1); break;
+    case 'score':
+      osc.type='square'; osc.frequency.setValueAtTime(600,t);
+      osc.frequency.setValueAtTime(800,t+0.08); osc.frequency.setValueAtTime(1000,t+0.16);
+      gain.gain.setValueAtTime(0.12,t); gain.gain.exponentialRampToValueAtTime(0.001,t+0.25);
+      osc.start(t); osc.stop(t+0.25); break;
+    case 'combo':
+      osc.type='sine'; osc.frequency.setValueAtTime(800,t);
+      osc.frequency.setValueAtTime(1200,t+0.1);
+      gain.gain.setValueAtTime(0.15,t); gain.gain.exponentialRampToValueAtTime(0.001,t+0.2);
+      osc.start(t); osc.stop(t+0.2); break;
+    case 'powerup':
+      osc.type='sine'; [523,659,784,1047].forEach((f,i)=>osc.frequency.setValueAtTime(f,t+i*0.08));
+      gain.gain.setValueAtTime(0.15,t); gain.gain.exponentialRampToValueAtTime(0.001,t+0.4);
+      osc.start(t); osc.stop(t+0.4); break;
+    case 'hit':
+      osc.type='sawtooth'; osc.frequency.setValueAtTime(200,t);
+      osc.frequency.exponentialRampToValueAtTime(50,t+0.3);
+      gain.gain.setValueAtTime(0.2,t); gain.gain.exponentialRampToValueAtTime(0.001,t+0.3);
+      osc.start(t); osc.stop(t+0.3); break;
+    case 'die':
+      osc.type='sawtooth'; osc.frequency.setValueAtTime(300,t);
+      osc.frequency.exponentialRampToValueAtTime(40,t+0.5);
+      gain.gain.setValueAtTime(0.2,t); gain.gain.exponentialRampToValueAtTime(0.001,t+0.5);
+      osc.start(t); osc.stop(t+0.5); break;
+  }
+}
+
+// ==================== MUSIC TRACKS ====================
+let musicInterval = null;
+let selectedTrack = 'edm';
+let currentNoteIdx = 0;
+
+const TRACKS = {
+  edm: {
+    name: 'EDM Vibes',
+    icon: '🎧',
+    bpm: 128,
+    type: 'square',
+    vol: 0.06,
+    notes: [392,440,494,523,494,440,392,330,349,392,440,494,440,392,349,330,294,330,349,392,440,494,523,587,523,494,440,392,349,330,294,262],
+    bass: [196,196,220,220,247,247,262,262,175,175,196,196,220,220,247,247,131,131,147,147,165,165,175,175,196,196,220,220,175,175,131,131],
+  },
+  lofi: {
+    name: 'Lo-fi Chill',
+    icon: '☕',
+    bpm: 80,
+    type: 'sine',
+    vol: 0.05,
+    notes: [262,294,330,349,392,349,330,294,262,247,220,247,262,294,330,294,262,247,220,196,220,247,262,294,330,349,392,440,392,349,330,262],
+    bass: null,
+  },
+  retro: {
+    name: '8-bit Retro',
+    icon: '👾',
+    bpm: 140,
+    type: 'square',
+    vol: 0.05,
+    notes: [523,587,659,698,784,698,659,587,523,494,440,494,523,587,659,587,523,494,440,392,440,494,523,587,659,698,784,880,784,698,659,523],
+    bass: [131,131,147,147,165,165,175,175,131,131,110,110,131,131,147,147,131,131,110,110,98,98,110,110,131,131,147,147,165,165,175,131],
+  },
+  kpop: {
+    name: 'K-pop Dance',
+    icon: '💃',
+    bpm: 120,
+    type: 'triangle',
+    vol: 0.06,
+    notes: [523,587,659,784,659,587,523,494,440,494,523,587,659,784,880,784,659,587,523,494,440,392,440,494,523,587,659,523,494,440,392,349],
+    bass: [262,262,294,294,330,330,349,349,220,220,262,262,294,294,330,330,262,262,220,220,196,196,220,220,262,262,294,262,220,220,196,175],
+  },
+  jazz: {
+    name: 'Smooth Jazz',
+    icon: '🎷',
+    bpm: 90,
+    type: 'sine',
+    vol: 0.05,
+    notes: [330,370,392,440,494,440,392,370,330,294,330,370,392,440,494,523,494,440,392,370,330,294,262,294,330,370,392,440,494,523,587,494],
+    bass: null,
+  },
+  chill: {
+    name: 'Ambient Chill',
+    icon: '🌙',
+    bpm: 70,
+    type: 'sine',
+    vol: 0.04,
+    notes: [262,330,392,440,392,330,262,220,247,294,349,392,349,294,247,220,196,247,294,330,392,330,294,247,196,220,262,330,392,440,523,440],
+    bass: null,
+  },
+  epic: {
+    name: 'Epic Battle',
+    icon: '⚔️',
+    bpm: 150,
+    type: 'sawtooth',
+    vol: 0.04,
+    notes: [392,392,440,494,523,587,523,494,392,392,440,494,523,587,659,587,523,494,440,392,440,494,523,587,659,784,659,587,523,494,440,392],
+    bass: [196,196,220,247,262,294,262,247,196,196,220,247,262,294,330,294,262,247,220,196,220,247,262,294,330,392,330,294,262,247,220,196],
+  },
+  cute: {
+    name: 'Cute & Happy',
+    icon: '🎀',
+    bpm: 110,
+    type: 'triangle',
+    vol: 0.06,
+    notes: [523,587,659,784,659,587,523,494,523,587,659,784,880,784,659,523,494,440,494,523,587,659,523,494,440,392,440,494,523,587,659,784],
+    bass: [262,262,294,294,330,330,349,349,262,262,294,294,330,330,262,262,220,220,247,247,294,294,262,262,220,220,196,196,220,220,294,294],
+  },
+};
+
+function startMusic() {
+  if (!musicEnabled || musicInterval) return;
+  initAudio();
+  const track = TRACKS[selectedTrack] || TRACKS.edm;
+  const noteLen = 60000 / track.bpm;
+  currentNoteIdx = 0;
+
+  function playNote() {
+    if (!musicEnabled) { stopMusic(); return; }
+    const t = audioCtx.currentTime;
+    const note = track.notes[currentNoteIdx % track.notes.length];
+
+    // Main melody
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.connect(g); g.connect(masterGain);
+    o.type = track.type;
+    o.frequency.setValueAtTime(note, t);
+    g.gain.setValueAtTime(track.vol, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + noteLen / 1000 * 0.8);
+    o.start(t); o.stop(t + noteLen / 1000);
+
+    // Bass (if track has it)
+    if (track.bass) {
+      const b = audioCtx.createOscillator();
+      const bg = audioCtx.createGain();
+      b.connect(bg); bg.connect(masterGain);
+      b.type = 'sine';
+      b.frequency.setValueAtTime(track.bass[currentNoteIdx % track.bass.length], t);
+      bg.gain.setValueAtTime(track.vol * 0.5, t);
+      bg.gain.exponentialRampToValueAtTime(0.001, t + noteLen / 1000 * 0.6);
+      b.start(t); b.stop(t + noteLen / 1000);
+    }
+
+    currentNoteIdx++;
+  }
+
+  playNote();
+  musicInterval = setInterval(playNote, noteLen);
+}
+
+function stopMusic() {
+  if (musicInterval) { clearInterval(musicInterval); musicInterval = null; }
+  currentNoteIdx = 0;
+}
+
+function previewTrack(trackId) {
+  const wasEnabled = musicEnabled;
+  const wasInterval = musicInterval;
+  stopMusic();
+  musicEnabled = true;
+  const prevTrack = selectedTrack;
+  selectedTrack = trackId;
+  startMusic();
+  // Auto stop preview after 3 seconds
+  setTimeout(() => {
+    stopMusic();
+    selectedTrack = prevTrack;
+    musicEnabled = wasEnabled;
+    if (wasEnabled && wasInterval) startMusic();
+  }, 3000);
+}
+
+// ==================== SKINS ====================
+const SKINS=[
+  {id:'default',name:'Mèo Hồng',desc:'Mèo hồng dễ thương mặc định',body:'#ff96c8',head:'#ffb6d9',ear:'#ff96c8',inner:'#ff69b4',nose:'#ff69b4',eye:'#333',icon:'🐱',unlock:null,price:0},
+  {id:'blue',name:'Mèo Xanh',desc:'Mèo xanh cool ngầu',body:'#60a5fa',head:'#93c5fd',ear:'#60a5fa',inner:'#3b82f6',nose:'#3b82f6',eye:'#1e3a5f',icon:'💙',unlock:{type:'score',value:10},price:50},
+  {id:'golden',name:'Mèo Vàng',desc:'Mèo vàng may mắn',body:'#fbbf24',head:'#fcd34d',ear:'#fbbf24',inner:'#f59e0b',nose:'#f59e0b',eye:'#78350f',icon:'💛',unlock:{type:'score',value:25},price:100},
+  {id:'dark',name:'Mèo Bóng Đêm',desc:'Mèo tối bí ẩn',body:'#6b7280',head:'#9ca3af',ear:'#6b7280',inner:'#4b5563',nose:'#4b5563',eye:'#fbbf24',icon:'🖤',unlock:{type:'score',value:50},price:200},
+  {id:'rainbow',name:'Mèo Cầu Vồng',desc:'Mèo phát sáng 7 màu',body:'rainbow',head:'rainbow',ear:'rainbow',inner:'#ff69b4',nose:'#ff69b4',eye:'#333',icon:'🌈',unlock:{type:'score',value:100},price:500},
+  {id:'ninja',name:'Mèo Ninja',desc:'Ninja mèo bất khả chiến bại',body:'#1f2937',head:'#374151',ear:'#1f2937',inner:'#ef4444',nose:'#ef4444',eye:'#ef4444',icon:'🥷',unlock:{type:'pipes',value:100},price:300},
+  {id:'galaxy',name:'Mèo Ngân Hà',desc:'Du hành xuyên dải ngân hà',body:'#4c1d95',head:'#6d28d9',ear:'#4c1d95',inner:'#a78bfa',nose:'#a78bfa',eye:'#e0e7ff',icon:'🌌',unlock:{type:'totalGames',value:50},price:400},
+  {id:'fire',name:'Mèo Lửa',desc:'Thiêu đốt mọi ống nước',body:'#dc2626',head:'#f87171',ear:'#dc2626',inner:'#fbbf24',nose:'#fbbf24',eye:'#fbbf24',icon:'🔥',unlock:{type:'combo',value:10},price:350},
+  {id:'ice',name:'Mèo Băng',desc:'Lạnh lùng vượt mọi thử thách',body:'#67e8f9',head:'#a5f3fc',ear:'#67e8f9',inner:'#06b6d4',nose:'#06b6d4',eye:'#164e63',icon:'🧊',unlock:{type:'powerups',value:50},price:250},
+  {id:'sakura',name:'Mèo Hoa Anh Đào',desc:'Dịu dàng như mùa xuân',body:'#fda4af',head:'#fecdd3',ear:'#fda4af',inner:'#fb7185',nose:'#fb7185',eye:'#881337',icon:'🌸',unlock:{type:'totalGames',value:20},price:150},
+  {id:'cyber',name:'Mèo Cyber',desc:'Neon & futuristic',body:'#06b6d4',head:'#22d3ee',ear:'#06b6d4',inner:'#a855f7',nose:'#a855f7',eye:'#a855f7',icon:'🤖',unlock:{type:'score',value:200},price:800},
+  {id:'ghost',name:'Mèo Ma',desc:'Xuyên qua mọi vật cản',body:'rgba(200,220,255,0.6)',head:'rgba(220,235,255,0.7)',ear:'rgba(200,220,255,0.5)',inner:'rgba(150,180,255,0.5)',nose:'#c084fc',eye:'#c084fc',icon:'👻',unlock:{type:'dodged',value:500},price:600},
+];
+
+let selectedSkin='default', unlockedSkins=new Set(['default']);
+function loadSkins(){
+  const s=localStorage.getItem('fc_skin');if(s&&SKINS.find(x=>x.id===s))selectedSkin=s;
+  const u=localStorage.getItem('fc_unlocked');if(u)try{unlockedSkins=new Set(JSON.parse(u));}catch{}unlockedSkins.add('default');
+}
+function saveSkin(){localStorage.setItem('fc_skin',selectedSkin);}
+function saveUnlocked(){localStorage.setItem('fc_unlocked',JSON.stringify([...unlockedSkins]));}
+function getSkin(){return SKINS.find(s=>s.id===selectedSkin)||SKINS[0];}
+function isRainbow(c){return c==='rainbow';}
+function skinColor(c){if(isRainbow(c)){const h=(performance.now()*0.1)%360;return `hsl(${h},80%,65%)`;}return c;}
+
+// ==================== STATS ====================
+let stats={bestScore:0,totalPipes:0,totalGames:0,bestCombo:0,totalPowerups:0,totalDodged:0,coins:0,dailyStreak:0,lastPlayDate:null,dailyBestScore:0,dailyBestDate:null,xp:0,level:1,lastLoginDate:null,loginDays:0};
+function loadStats(){try{const s=localStorage.getItem('fc_stats');if(s)stats={...stats,...JSON.parse(s)};}catch{}}
+function saveStats(){localStorage.setItem('fc_stats',JSON.stringify(stats));}
+
+const ACHIEVEMENTS=[
+  {id:'first',name:'Chuyến bay đầu',desc:'Chơi lần đầu',icon:'✈️',check:s=>s.totalGames>=1},
+  {id:'s10',name:'Mười ống',desc:'Đạt 10 điểm',icon:'🔟',check:s=>s.bestScore>=10},
+  {id:'s25',name:'Bạc',desc:'Đạt 25 điểm',icon:'🥈',check:s=>s.bestScore>=25},
+  {id:'s50',name:'Vàng',desc:'Đạt 50 điểm',icon:'🥇',check:s=>s.bestScore>=50},
+  {id:'s100',name:'Bạch kim',desc:'Đạt 100 điểm',icon:'💎',check:s=>s.bestScore>=100},
+  {id:'s200',name:'Huyền thoại',desc:'Đạt 200 điểm',icon:'👑',check:s=>s.bestScore>=200},
+  {id:'c5',name:'Combo x5',desc:'Combo x5 liên tiếp',icon:'🔥',check:s=>s.bestCombo>=5},
+  {id:'c10',name:'Combo x10',desc:'Combo x10 liên tiếp',icon:'💥',check:s=>s.bestCombo>=10},
+  {id:'g10',name:'Chăm chỉ',desc:'Chơi 10 lần',icon:'🎮',check:s=>s.totalGames>=10},
+  {id:'g50',name:'Nghiện game',desc:'Chơi 50 lần',icon:'🎯',check:s=>s.totalGames>=50},
+  {id:'p100',name:'100 ống',desc:'Tổng 100 ống đã qua',icon:'🏗️',check:s=>s.totalPipes>=100},
+  {id:'p500',name:'500 ống',desc:'Tổng 500 ống đã qua',icon:'🏰',check:s=>s.totalPipes>=500},
+  {id:'pu10',name:'Sưu tầm',desc:'Nhặt 10 power-up',icon:'⭐',check:s=>s.totalPowerups>=10},
+  {id:'pu50',name:'Tham lam',desc:'Nhặt 50 power-up',icon:'✨',check:s=>s.totalPowerups>=50},
+];
+
+function tryUnlockSkins(){
+  const newOnes=[];
+  for(const skin of SKINS){
+    if(unlockedSkins.has(skin.id)||!skin.unlock)continue;
+    let val=0;
+    switch(skin.unlock.type){
+      case'score':val=stats.bestScore;break;
+      case'pipes':val=stats.totalPipes;break;
+      case'totalGames':val=stats.totalGames;break;
+      case'combo':val=stats.bestCombo;break;
+      case'powerups':val=stats.totalPowerups;break;
+      case'dodged':val=stats.totalDodged;break;
+    }
+    if(val>=skin.unlock.value){unlockedSkins.add(skin.id);newOnes.push(skin);}
+  }
+  if(newOnes.length)saveUnlocked();
+  return newOnes;
+}
+
+// ==================== CONSTANTS ====================
+const GRAVITY=0.42, JUMP=-7.2;
+function pipeW(){return Math.round(canvas.width*0.14);}
+function catSz(){return Math.round(canvas.width*0.07)*MODES[currentMode].sizeMul;}
+function groundH(){return Math.round(canvas.height*0.046);}
+
+// ==================== GAME STATE ====================
+let state='idle'; // idle|playing|over
+let cat, pipes, particles, floatTexts, powerups;
+let score, combo, comboTimer, pipesCleared, powerupsCollected;
+let difficulty, invincibleTimer, shakeTimer, shakeMag;
+let lastPipe, activeShield, activeSlow, activeTiny;
+let groundX=0;
+let starField=[];
+for(let i=0;i<50;i++) starField.push({x:Math.random(),y:Math.random()*0.7,s:0.5+Math.random()*2,sp:0.0002+Math.random()*0.0005});
+
+function initGame(){
+  cat={x:80,y:canvas.height/2,vy:0,rot:0};
+  pipes=[];particles=[];floatTexts=[];powerups=[];
+  score=0;combo=1;comboTimer=0;pipesCleared=0;powerupsCollected=0;
+  difficulty=0;invincibleTimer=0;shakeTimer=0;shakeMag=0;
+  lastPipe=performance.now()-1100;
+  activeShield=0;activeSlow=0;activeTiny=0;
+  groundX=0;
+}
+
+// ==================== DIFFICULTY ====================
+function getGap(){return Math.max(canvas.width*0.25,canvas.width*0.39-difficulty*3)*MODES[currentMode].gapMul;}
+function getSpeed(){return(2.5+difficulty*0.15)*MODES[currentMode].speedMul;}
+function getInterval(){return Math.max(1000,1600-difficulty*40)/MODES[currentMode].speedMul;}
+function getTheme(){
+  if(difficulty<5)return{sky1:'#667eea',sky2:'#764ba2',sky3:'#f093fb',pipe:'#2ecc71',pd:'#27ae60',mt:'rgba(100,60,150,0.3)'};
+  if(difficulty<10)return{sky1:'#ee6676',sky2:'#d63384',sky3:'#6f42c1',pipe:'#e74c3c',pd:'#c0392b',mt:'rgba(150,60,60,0.3)'};
+  if(difficulty<15)return{sky1:'#0f2027',sky2:'#203a43',sky3:'#2c5364',pipe:'#f39c12',pd:'#d68910',mt:'rgba(30,60,80,0.4)'};
+  return{sky1:'#0f0c29',sky2:'#302b63',sky3:'#24243e',pipe:'#e91e63',pd:'#c2185b',mt:'rgba(20,20,60,0.5)'};
+}
+
+// ==================== DRAW HELPERS ====================
+function drawBg(th){
+  const g=ctx.createLinearGradient(0,0,0,canvas.height);
+  g.addColorStop(0,th.sky1);g.addColorStop(0.5,th.sky2);g.addColorStop(1,th.sky3);
+  ctx.fillStyle=g;ctx.fillRect(0,0,canvas.width,canvas.height);
+  const now=performance.now();
+  ctx.fillStyle='rgba(255,255,255,0.4)';
+  for(const s of starField){
+    s.x=(s.x+s.sp)%1;ctx.globalAlpha=0.3+Math.sin(now*0.002+s.s*10)*0.2;
+    ctx.beginPath();ctx.arc(s.x*canvas.width,s.y*canvas.height,s.s,0,Math.PI*2);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  ctx.fillStyle=th.mt;ctx.beginPath();ctx.moveTo(0,canvas.height-60);
+  for(let x=0;x<=canvas.width;x+=40)ctx.lineTo(x,canvas.height-60-Math.sin(x*0.015+difficulty*0.1)*30-20);
+  ctx.lineTo(canvas.width,canvas.height-30);ctx.lineTo(0,canvas.height-30);ctx.fill();
+}
+
+function drawGround(){
+  const g=ctx.createLinearGradient(0,canvas.height-groundH(),0,canvas.height);
+  g.addColorStop(0,'#5a3e28');g.addColorStop(1,'#3d2817');
+  ctx.save();ctx.beginPath();ctx.rect(0,canvas.height-groundH(),canvas.width,groundH());ctx.clip();
+  ctx.fillStyle=g;ctx.fillRect(0,canvas.height-groundH(),canvas.width*2,groundH());
+  ctx.fillStyle='rgba(255,255,255,0.05)';
+  for(let i=-1;i<20;i++){ctx.fillRect(i*30-groundX%30,canvas.height-groundH(),15,groundH());}
+  ctx.restore();
+  ctx.fillStyle='#2ecc71';ctx.globalAlpha=0.6;ctx.fillRect(0,canvas.height-groundH(),canvas.width,4);ctx.globalAlpha=1;
+}
+
+function drawPipe(p,th){
+  const capH=18,capE=7,gap=getGap();
+  const gr=ctx.createLinearGradient(p.x,0,p.x+pipeW(),0);
+  gr.addColorStop(0,th.pipe);gr.addColorStop(0.5,th.pd);gr.addColorStop(1,th.pipe);
+  ctx.fillStyle=gr;ctx.fillRect(p.x,0,pipeW(),p.topH);
+  ctx.fillStyle=th.pd;ctx.fillRect(p.x-capE,p.topH-capH,pipeW()+capE*2,capH);
+  const bY=p.topH+gap;
+  ctx.fillStyle=gr;ctx.fillRect(p.x,bY,pipeW(),canvas.height-bY);
+  ctx.fillStyle=th.pd;ctx.fillRect(p.x-capE,bY,pipeW()+capE*2,capH);
+  ctx.fillStyle='rgba(255,255,255,0.12)';
+  ctx.fillRect(p.x+7,0,5,p.topH-capH);ctx.fillRect(p.x+7,bY+capH,5,canvas.height-bY-capH);
+}
+
+function drawCat(){
+  const now=performance.now(),skin=getSkin(),sz=catSz();
+  const tiny=activeTiny>0?0.65:1;const tsz=sz*tiny;
+  ctx.save();ctx.translate(cat.x,cat.y);ctx.rotate(cat.rot);
+  if(invincibleTimer>0&&Math.floor(invincibleTimer/80)%2===0)ctx.globalAlpha=0.5;
+  if(activeShield>0||invincibleTimer>0){
+    ctx.strokeStyle='rgba(100,200,255,0.6)';ctx.lineWidth=3;
+    ctx.beginPath();ctx.arc(0,0,tsz+8,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle='rgba(100,200,255,0.1)';ctx.fill();
+  }
+  const sc=c=>skinColor(c);
+  // body
+  ctx.fillStyle=sc(skin.body);ctx.beginPath();ctx.ellipse(0,0,tsz*0.55,tsz*0.45,0,0,Math.PI*2);ctx.fill();
+  // wings
+  if(cat.vy<-1){ctx.fillStyle='rgba(255,255,255,0.4)';const wf=Math.sin(now*0.02)*8;ctx.beginPath();ctx.ellipse(-2,-tsz*0.3-wf,tsz*0.35,tsz*0.15,-0.3,0,Math.PI*2);ctx.fill();}
+  // head
+  ctx.fillStyle=sc(skin.head);ctx.beginPath();ctx.arc(tsz*0.25,-tsz*0.18,tsz*0.32,0,Math.PI*2);ctx.fill();
+  // ears
+  ctx.fillStyle=sc(skin.ear);
+  [[0.08,-0.42,0.03,-0.7,0.25,-0.46],[0.32,-0.42,0.42,-0.7,0.48,-0.42]].forEach(e=>{ctx.beginPath();ctx.moveTo(tsz*e[0],tsz*e[1]);ctx.lineTo(tsz*e[2],tsz*e[3]);ctx.lineTo(tsz*e[4],tsz*e[5]);ctx.fill();});
+  ctx.fillStyle=sc(skin.inner);
+  [[0.1,-0.44,0.08,-0.62,0.23,-0.47],[0.34,-0.44,0.41,-0.62,0.46,-0.44]].forEach(e=>{ctx.beginPath();ctx.moveTo(tsz*e[0],tsz*e[1]);ctx.lineTo(tsz*e[2],tsz*e[3]);ctx.lineTo(tsz*e[4],tsz*e[5]);ctx.fill();});
+  // eyes
+  const blink=Math.sin(now*0.005)>0.95?0.1:1;
+  ctx.fillStyle=skin.eye;
+  [0.17,0.35].forEach(ex=>{ctx.beginPath();ctx.ellipse(tsz*ex,-tsz*0.22,3*tiny,4*tiny*blink,0,0,Math.PI*2);ctx.fill();});
+  if(skin.id!=='ghost'){ctx.fillStyle='white';[0.19,0.37].forEach(ex=>{ctx.beginPath();ctx.arc(tsz*ex,-tsz*0.25,1.5*tiny,0,Math.PI*2);ctx.fill();});}
+  // nose
+  ctx.fillStyle=sc(skin.nose);ctx.beginPath();ctx.arc(tsz*0.26,-tsz*0.1,2*tiny,0,Math.PI*2);ctx.fill();
+  // mouth
+  ctx.strokeStyle=sc(skin.nose);ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.arc(tsz*0.22,-tsz*0.05,3*tiny,0,Math.PI*0.7);ctx.stroke();
+  ctx.beginPath();ctx.arc(tsz*0.3,-tsz*0.05,3*tiny,Math.PI*0.3,Math.PI);ctx.stroke();
+  // tail
+  ctx.strokeStyle=sc(skin.body);ctx.lineWidth=3.5;ctx.lineCap='round';
+  const tw=Math.sin(now*0.008)*0.3;
+  ctx.beginPath();ctx.moveTo(-tsz*0.45,0);ctx.quadraticCurveTo(-tsz*0.7,-tsz*0.25+tw*15,-tsz*0.6,-tsz*0.5+tw*10);ctx.stroke();
+  ctx.restore();ctx.globalAlpha=1;
+}
+
+function drawPowerups(){
+  const now=performance.now();
+  for(const pu of powerups){
+    if(pu.collected)continue;
+    const bob=Math.sin(now*0.003+pu.bob)*5,sz=14;
+    ctx.save();ctx.translate(pu.x,pu.y+bob);
+    ctx.fillStyle=pu.type==='shield'?'rgba(100,200,255,0.2)':pu.type==='slow'?'rgba(255,200,0,0.2)':'rgba(0,255,150,0.2)';
+    ctx.beginPath();ctx.arc(0,0,sz+4+Math.sin(now*0.005)*2,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=pu.type==='shield'?'#64c8ff':pu.type==='slow'?'#ffc800':'#00ff96';
+    ctx.beginPath();ctx.arc(0,0,sz,0,Math.PI*2);ctx.fill();
+    ctx.font='14px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(pu.type==='shield'?'🛡️':pu.type==='slow'?'⏳':'🐁',0,0);
+    ctx.restore();
+  }
+}
+
+function drawParticles(){
+  for(const p of particles){ctx.globalAlpha=p.life;ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.size*p.life,0,Math.PI*2);ctx.fill();}
+  ctx.globalAlpha=1;
+}
+
+function drawFloatTexts(){
+  for(const t of floatTexts){ctx.globalAlpha=t.life;ctx.fillStyle=t.color;ctx.font=`bold ${18+(1-t.life)*10}px sans-serif`;ctx.textAlign='center';ctx.fillText(t.text,t.x,t.y);}
+  ctx.globalAlpha=1;
+}
+
+function spawnP(x,y,color,count){for(let i=0;i<count;i++)particles.push({x,y,vx:(Math.random()-0.5)*6,vy:(Math.random()-0.5)*6-2,life:1,color,size:2+Math.random()*4});}
+function addFloat(x,y,text,color){floatTexts.push({x,y,text,color,life:1,vy:-2});}
+
+// ==================== GAME LOGIC ====================
+function updateGame(){
+  if(state!=='playing')return;
+  const now=performance.now(),dt=16.67;
+  difficulty=Math.floor(score/5);
+
+  // cat physics
+  cat.vy+=GRAVITY;cat.y+=cat.vy;cat.rot=clamp(cat.vy*0.04,-0.5,1.2);
+
+  // timers
+  if(invincibleTimer>0)invincibleTimer-=dt;
+  if(comboTimer>0){comboTimer-=dt;if(comboTimer<=0){combo=1;updateComboUI();}}
+  if(shakeTimer>0)shakeTimer-=dt;
+  if(activeShield>0)activeShield-=dt;
+  if(activeSlow>0)activeSlow-=dt;
+  if(activeTiny>0)activeTiny-=dt;
+
+  const speedMul=activeSlow>0?0.6:1;
+  const speed=getSpeed()*speedMul;
+  const gap=getGap();
+
+  // spawn pipes
+  if(now-lastPipe>getInterval()){
+    const minT=70,maxT=canvas.height-gap-70;
+    const topH=minT+Math.random()*(maxT-minT);
+    pipes.push({x:canvas.width,topH,scored:false});
+    if(Math.random()<0.2){
+      const types=['shield','slow','tiny'];
+      powerups.push({x:canvas.width+pipeW()+40,y:topH+gap/2,type:types[Math.floor(Math.random()*3)],collected:false,bob:Math.random()*Math.PI*2});
+    }
+    lastPipe=now;
+  }
+
+  // move pipes
+  for(let i=pipes.length-1;i>=0;i--){pipes[i].x-=speed;if(pipes[i].x+pipeW()<-10)pipes.splice(i,1);}
+
+  // scoring
+  for(const p of pipes){
+    if(!p.scored&&p.x+pipeW()<cat.x){
+      p.scored=true;pipesCleared++;score++;combo++;comboTimer=2000;
+      if(combo>=3){score++;playSound('combo');addFloat(cat.x+30,cat.y-20,`x${combo}!`,'#ffcc00');}
+      else playSound('score');
+      updateScoreUI();updateComboUI();
+    }
+  }
+
+  // move & collect powerups
+  for(let i=powerups.length-1;i>=0;i--){
+    powerups[i].x-=speed;
+    if(!powerups[i].collected&&dist(cat.x,cat.y,powerups[i].x,powerups[i].y)<catSz()+14){
+      powerups[i].collected=true;powerupsCollected++;playSound('powerup');
+      spawnP(powerups[i].x,powerups[i].y,'#ffcc00',10);
+      const lbl=powerups[i].type==='shield'?'🛡️ Shield!':powerups[i].type==='slow'?'⏳ Slow-mo!':'🐁 Tiny!';
+      addFloat(powerups[i].x,powerups[i].y-20,lbl,'#00ff96');
+      if(powerups[i].type==='shield')activeShield=5000;
+      else if(powerups[i].type==='slow')activeSlow=4000;
+      else activeTiny=5000;
+      updatePUBar();
+    }
+    if(powerups[i].x<-30)powerups.splice(i,1);
+  }
+
+  // particles & float texts
+  for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx;p.y+=p.vy;p.vy+=0.1;p.life-=0.02;if(p.life<=0)particles.splice(i,1);}
+  for(let i=floatTexts.length-1;i>=0;i--){const t=floatTexts[i];t.y+=t.vy;t.life-=0.02;if(t.life<=0)floatTexts.splice(i,1);}
+  groundX+=speed;
+
+  // collision
+  const hit=checkCollision();
+  if(hit==='shield'){
+    activeShield=0;invincibleTimer=500;cat.x-=15;cat.vy=JUMP;
+    playSound('hit');shakeTimer=200;shakeMag=5;
+    spawnP(cat.x,cat.y,'#64c8ff',15);addFloat(cat.x,cat.y-30,'🛡️ Saved!','#64c8ff');updatePUBar();
+  }else if(hit==='die')gameOver();
+}
+
+function checkCollision(){
+  const tiny=activeTiny>0?0.65:1,sz=catSz()*tiny,gap=getGap();
+  if(invincibleTimer>0)return'none';
+  if(cat.y+sz*0.3>canvas.height-groundH()||cat.y-sz*0.5<0)return'die';
+  for(const p of pipes){
+    if(cat.x+sz*0.5>p.x&&cat.x-sz*0.5<p.x+pipeW()){
+      if(cat.y-sz*0.3<p.topH||cat.y+sz*0.3>p.topH+gap)return activeShield>0?'shield':'die';
+    }
+  }
+  return'none';
+}
+
+function gameOver(){
+  state='over';stopMusic();playSound('die');
+  spawnP(cat.x,cat.y,'#ff69b4',25);
+  // update stats
+  stats.totalGames++;stats.totalPipes+=pipesCleared;stats.totalPowerups+=powerupsCollected;
+  if(score>stats.bestScore)stats.bestScore=score;if(combo>stats.bestCombo)stats.bestCombo=combo;
+  // Earn coins: 1 per pipe + 5 per powerup + bonus for score milestones (mode multiplier)
+  const coinMul=MODES[currentMode].coinMul;
+  const coinsEarned=Math.round((pipesCleared+powerupsCollected*5+Math.floor(score/10)*3)*coinMul);
+  stats.coins+=coinsEarned;
+  // Add XP: 1 per score + 5 per pipe + 10 per powerup
+  const xpEarned=score+pipesCleared*5+powerupsCollected*10;
+  addXp(xpEarned);
+  saveStats();
+  // Leaderboard + streak + missions
+  addToLeaderboard(score,pipesCleared,combo);
+  updateDailyStreak();
+  trackDailyGames();
+  const completedMissions=checkMissions({score,pipesCleared,powerupsCollected,combo});
+  const newSkins=tryUnlockSkins();
+  const newAch=checkNewAchievements();
+  setTimeout(()=>{
+    if(newSkins.length){
+      const names=newSkins.map(s=>s.icon+' '+s.name).join(', ');
+      showToast('🎉','Mở khóa skin mới!',names,4000);
+    } else if(completedMissions.length){
+      const names=completedMissions.map(m=>m.icon+' '+m.name).join(', ');
+      showToast('📋','Nhiệm vụ hoàn thành!',names+' - Vào mục Nhiệm vụ để nhận thưởng',4000);
+    } else if(newAch.length){
+      const names=newAch.map(a=>a.icon+' '+a.name).join(', ');
+      showToast('🏆','Thành tích mới!',names,3500);
+    }
+  },300);
+  // update UI
+  document.getElementById('finalScore').textContent=score;
+  document.getElementById('statBest').textContent=stats.bestScore;
+  document.getElementById('statPipes').textContent=pipesCleared;
+  document.getElementById('statPowerups').textContent=powerupsCollected;
+  document.getElementById('statCoins').textContent='+'+coinsEarned;
+  document.getElementById('menuCoins').textContent=`💰 ${stats.coins}`;
+  const bl=document.getElementById('bestLabel');
+  bl.textContent=score>=stats.bestScore?'🏆 NEW BEST!':`Best: ${stats.bestScore}`;
+  bl.className=score>=stats.bestScore?'best new-best':'best';
+  if(document.getElementById('vibrateToggle').checked&&navigator.vibrate)navigator.vibrate(200);
+  if(score>=stats.bestScore)showToast('🏆','NEW BEST!','Đạt '+score+' điểm',2500);
+  document.getElementById('hud').classList.add('hidden');
+  showScreen('gameOver');
+}
+
+function drawGame(){
+  ctx.save();
+  if(shakeTimer>0)ctx.translate((Math.random()-0.5)*shakeMag,(Math.random()-0.5)*shakeMag);
+  const th=getTheme();
+  drawBg(th);
+  for(const p of pipes)drawPipe(p,th);
+  drawPowerups();drawGround();drawCat();drawParticles();drawFloatTexts();
+  // Night mode overlay - spotlight effect
+  if(currentMode==='night'){
+    const grd=ctx.createRadialGradient(cat.x,cat.y,50,cat.x,cat.y,200);
+    grd.addColorStop(0,'rgba(0,0,0,0)');
+    grd.addColorStop(0.6,'rgba(0,0,0,0.7)');
+    grd.addColorStop(1,'rgba(0,0,0,0.95)');
+    ctx.fillStyle=grd;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+  }
+  ctx.restore();
+}
+
+let animFrame=null;
+function gameLoop(){updateGame();drawGame();animFrame=requestAnimationFrame(gameLoop);}
+
+// ==================== UI UPDATES ====================
+function updateScoreUI(){
+  document.getElementById('score').textContent=score;
+  // Score milestone popup
+  if(score>0&&score%25===0){
+    const pop=document.createElement('div');
+    pop.className='score-pop';
+    pop.textContent=score;
+    document.getElementById('gameContainer').appendChild(pop);
+    setTimeout(()=>pop.remove(),800);
+  }
+}
+function updateComboUI(){
+  const el=document.getElementById('combo');
+  if(combo>=2){
+    el.textContent=`🔥 x${combo} combo`;
+    el.classList.add('show');
+    // Combo flash
+    if(combo>=3&&combo%2===0){
+      const flash=document.createElement('div');
+      flash.className='combo-flash';
+      document.getElementById('gameContainer').appendChild(flash);
+      setTimeout(()=>flash.remove(),300);
+    }
+  }
+  else el.classList.remove('show');
+}
+function updatePUBar(){
+  document.getElementById('puShield').classList.toggle('active',activeShield>0);
+  document.getElementById('puSlow').classList.toggle('active',activeSlow>0);
+  document.getElementById('puTiny').classList.toggle('active',activeTiny>0);
+}
+
+// ==================== LEADERBOARD ====================
+function getTodayStr(){return new Date().toISOString().slice(0,10);}
+function loadLeaderboard(){try{return JSON.parse(localStorage.getItem('fc_leaderboard')||'[]');}catch{return[];}}
+function saveLeaderboard(lb){localStorage.setItem('fc_leaderboard',JSON.stringify(lb));}
+function addToLeaderboard(score,pipesCleared,combo){
+  const lb=loadLeaderboard();
+  lb.push({score,pipes:pipesCleared,combo,date:getTodayStr(),ts:Date.now()});
+  lb.sort((a,b)=>b.score-a.score);
+  if(lb.length>50)lb.length=50;
+  saveLeaderboard(lb);
+}
+function renderLeaderboard(tab){
+  const list=document.getElementById('lbList');
+  const lb=loadLeaderboard();
+  const today=getTodayStr();
+  const filtered=tab==='daily'?lb.filter(e=>e.date===today):lb;
+  if(!filtered.length){
+    list.innerHTML='<div class="lb-empty">Chưa có điểm nào'+(tab==='daily'?' hôm nay':'')+' 🐱<br>Chơi ngay!</div>';
+    return;
+  }
+  list.innerHTML='';
+  filtered.slice(0,20).forEach((e,i)=>{
+    const item=document.createElement('div');
+    const cls=i===0?'top1':i===1?'top2':i===2?'top3':'';
+    item.className='lb-entry '+cls;
+    const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1);
+    item.innerHTML=`
+      <div class="lb-rank">${medal}</div>
+      <div class="lb-info">
+        <div class="lb-name">Điểm #${i+1}</div>
+        <div class="lb-date">${e.date} · ${e.pipes} ống · x${e.combo} combo</div>
+      </div>
+      <div class="lb-score">${e.score}</div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+// ==================== DAILY STREAK ====================
+function updateDailyStreak(){
+  const today=getTodayStr();
+  const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  if(stats.lastPlayDate===today)return; // already played today
+  if(stats.lastPlayDate===yesterday){
+    stats.dailyStreak++;
+  } else if(stats.lastPlayDate!==today){
+    stats.dailyStreak=1;
+  }
+  stats.lastPlayDate=today;
+  // Streak bonus
+  if(stats.dailyStreak>=7)stats.coins+=20;
+  else if(stats.dailyStreak>=3)stats.coins+=10;
+  else if(stats.dailyStreak>=1)stats.coins+=5;
+  saveStats();
+}
+
+// ==================== DAILY MISSIONS ====================
+const MISSIONS=[
+  {id:'daily_score15',name:'Khởi động nhẹ',desc:'Đạt 15 điểm trong 1 lần',icon:'🎯',check:(s,g)=>g.score>=15,reward:15},
+  {id:'daily_score30',name:'Trung cấp',desc:'Đạt 30 điểm trong 1 lần',icon:'🎯',check:(s,g)=>g.score>=30,reward:30},
+  {id:'daily_pipes20',name:'Ống nước',desc:'Qua 20 ống trong 1 lần',icon:'🏗️',check:(s,g)=>g.pipesCleared>=20,reward:20},
+  {id:'daily_combo5',name:'Combo master',desc:'Đạt combo x5',icon:'🔥',check:(s,g)=>g.combo>=5,reward:25},
+  {id:'daily_powerup3',name:'Sưu tập',desc:'Nhặt 3 power-up trong 1 lần',icon:'⭐',check:(s,g)=>g.powerupsCollected>=3,reward:15},
+  {id:'daily_games3',name:'Chăm chỉ',desc:'Chơi 3 lần trong ngày',icon:'🎮',check:(s)=>{const t=getTodayStr();const d=JSON.parse(localStorage.getItem('fc_dailyGames')||'{}');return(d[t]||0)>=3;},reward:30},
+];
+function getDailyMissions(){
+  try{
+    const data=JSON.parse(localStorage.getItem('fc_dailyMissions')||'{}');
+    const today=getTodayStr();
+    if(data._date!==today){return{_date:today};}
+    return data;
+  }catch{return{_date:getTodayStr()};}
+}
+function saveDailyMissions(m){m._date=getTodayStr();localStorage.setItem('fc_dailyMissions',JSON.stringify(m));}
+function trackDailyGames(){
+  const t=getTodayStr();
+  const d=JSON.parse(localStorage.getItem('fc_dailyGames')||'{}');
+  d[t]=(d[t]||0)+1;
+  localStorage.setItem('fc_dailyGames',JSON.stringify(d));
+}
+function checkMissions(gameData){
+  const completed=getDailyMissions();
+  const newlyCompleted=[];
+  for(const m of MISSIONS){
+    if(completed[m.id])continue;
+    if(m.check(stats,gameData)){
+      completed[m.id]='done';
+      newlyCompleted.push(m);
+    }
+  }
+  saveDailyMissions(completed);
+  return newlyCompleted;
+}
+function claimMission(missionId){
+  const m=MISSIONS.find(x=>x.id===missionId);
+  if(!m)return;
+  const completed=getDailyMissions();
+  if(completed[missionId]!=='done')return;
+  completed[missionId]='claimed';
+  saveDailyMissions(completed);
+  stats.coins+=m.reward;
+  saveStats();
+  showToast('💰','Nhận thưởng!',m.icon+' +'+m.reward+' coin',2500);
+  renderMissions();
+}
+function renderMissions(){
+  const list=document.getElementById('missionsList');
+  const completed=getDailyMissions();
+  list.innerHTML='';
+  for(const m of MISSIONS){
+    const status=completed[m.id]||'pending';
+    const item=document.createElement('div');
+    item.className='mission-item'+(status==='done'?' completed':'')+(status==='claimed'?' claimed':'');
+    item.innerHTML=`
+      <div class="mission-icon">${m.icon}</div>
+      <div class="mission-info">
+        <div class="mission-name">${m.name}</div>
+        <div class="mission-desc">${m.desc}</div>
+        ${status==='pending'?'<div class="mission-progress"><div class="mission-progress-bar" style="width:0%"></div></div>':''}
+        ${status==='done'?'<button class="mission-claim-btn" data-mission="${m.id}">Nhận thưởng</button>':''}
+        ${status==='claimed'?'<div style="color:#6b7280;font-size:11px">✅ Đã nhận</div>':''}
+      </div>
+      <div class="mission-reward">
+        <div class="mission-reward-amount">${m.reward}💰</div>
+        <div class="mission-reward-label">coin</div>
+      </div>
+    `;
+    if(status==='done'){
+      item.querySelector('.mission-claim-btn').onclick=()=>claimMission(m.id);
+    }
+    list.appendChild(item);
+  }
+}
+
+// ==================== XP & LEVEL ====================
+function getXpForLevel(lv){return lv*100;}
+function addXp(amount){
+  stats.xp+=amount;
+  while(stats.xp>=getXpForLevel(stats.level)){
+    stats.xp-=getXpForLevel(stats.level);
+    stats.level++;
+    showToast('🎊','Level Up!',`Đạt Lv.${stats.level}!`,3000);
+  }
+  saveStats();
+}
+function renderProfile(){
+  const xpNeeded=getXpForLevel(stats.level);
+  const pct=Math.min(100,Math.round(stats.xp/xpNeeded*100));
+  document.getElementById('profileLevel').textContent=`Lv. ${stats.level}`;
+  document.getElementById('profileXpFill').style.width=pct+'%';
+  document.getElementById('profileXpText').textContent=`${stats.xp} / ${xpNeeded} XP`;
+  const avgScore=stats.totalGames>0?Math.round(stats.bestScore/stats.totalGames*10)/10:0;
+  const playTime=stats.totalGames*30; // rough estimate: 30s per game
+  document.getElementById('profileStats').innerHTML=`
+    <div class="profile-stat"><span class="profile-stat-label">🎮 Tổng ván</span><span class="profile-stat-value">${stats.totalGames}</span></div>
+    <div class="profile-stat"><span class="profile-stat-label">🏆 Best Score</span><span class="profile-stat-value">${stats.bestScore}</span></div>
+    <div class="profile-stat"><span class="profile-stat-label">🔥 Combo cao nhất</span><span class="profile-stat-value">x${stats.bestCombo}</span></div>
+    <div class="profile-stat"><span class="profile-stat-label">🏗️ Tổng ống</span><span class="profile-stat-value">${stats.totalPipes}</span></div>
+    <div class="profile-stat"><span class="profile-stat-label">⭐ Tổng power-up</span><span class="profile-stat-value">${stats.totalPowerups}</span></div>
+    <div class="profile-stat"><span class="profile-stat-label">💰 Coins</span><span class="profile-stat-value">${stats.coins}</span></div>
+    <div class="profile-stat"><span class="profile-stat-label">🔥 Streak</span><span class="profile-stat-value">${stats.dailyStreak} ngày</span></div>
+    <div class="profile-stat"><span class="profile-stat-label">📊 TB điểm</span><span class="profile-stat-value">${avgScore}</span></div>
+  `;
+}
+
+// ==================== LOGIN REWARDS ====================
+const LOGIN_REWARDS=[5,10,15,20,25,30,50];
+function checkLoginReward(){
+  const today=getTodayStr();
+  if(stats.lastLoginDate===today)return null;
+  const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  if(stats.lastLoginDate===yesterday){
+    stats.loginDays=(stats.loginDays||0)+1;
+  } else {
+    stats.loginDays=1;
+  }
+  stats.lastLoginDate=today;
+  const dayIdx=(stats.loginDays-1)%7;
+  const reward=LOGIN_REWARDS[dayIdx];
+  stats.coins+=reward;
+  saveStats();
+  return {day:stats.loginDays,reward,dayIdx};
+}
+function showLoginReward(rewardData){
+  if(!rewardData)return;
+  const banner=document.createElement('div');
+  banner.className='login-reward-banner';
+  let daysHtml='';
+  for(let i=0;i<7;i++){
+    const isToday=i===rewardData.dayIdx;
+    const isClaimed=i<rewardData.dayIdx;
+    const cls=isToday?'today':isClaimed?'claimed':'';
+    const rwd=LOGIN_REWARDS[i];
+    daysHtml+=`<div class="login-day ${cls}"><div class="login-day-num">${isClaimed?'✓':i+1}</div><div class="login-day-reward">${rwd}💰</div></div>`;
+  }
+  banner.innerHTML=`
+    <div class="login-reward-title">🎁 Quà đăng nhập ngày ${rewardData.day}!</div>
+    <div class="login-reward-days">${daysHtml}</div>
+    <button class="login-reward-btn" id="claimLoginReward">Nhận +${rewardData.reward}💰</button>
+  `;
+  document.getElementById('gameContainer').appendChild(banner);
+  document.getElementById('claimLoginReward').onclick=()=>{
+    banner.remove();
+    showToast('💰','Nhận thành công!',`+${rewardData.reward} coin`,2500);
+  };
+}
+
+// ==================== GAME MODES ====================
+function renderModes(){
+  const cards=document.querySelectorAll('.mode-card');
+  cards.forEach(card=>{
+    const mode=card.dataset.mode;
+    const modeData=MODES[mode];
+    const unlocked=stats.level>=modeData.unlock;
+    const tag=card.querySelector('.mode-tag');
+    card.classList.toggle('locked',!unlocked);
+    card.classList.toggle('selected',currentMode===mode);
+    if(unlocked){
+      tag.className='mode-tag'+(currentMode===mode?' active':'');
+      tag.textContent=currentMode===mode?'✓ Đang chọn':'Chọn';
+    }
+    card.onclick=()=>{
+      if(!unlocked){
+        showToast('🔒','Chưa mở khóa!',`Cần đạt Lv.${modeData.unlock} để mở`,2500);
+        return;
+      }
+      currentMode=mode;
+      renderModes();
+      showToast('🎪','Đã chọn chế độ!',modeData.name,2000);
+    };
+  });
+}
+
+// ==================== TOAST ====================
+let toastTimeout = null;
+function showToast(icon, title, desc, duration) {
+  duration = duration || 3000;
+  const t = document.getElementById('toast');
+  document.getElementById('toastIcon').textContent = icon;
+  document.getElementById('toastTitle').textContent = title;
+  document.getElementById('toastDesc').textContent = desc || '';
+  t.classList.add('show');
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), duration);
+}
+document.getElementById('toast').onclick = () => {
+  document.getElementById('toast').classList.remove('show');
+  if (toastTimeout) clearTimeout(toastTimeout);
+};
+
+// ==================== SCREEN MANAGEMENT ====================
+const screens={menu:'menuScreen',skins:'skinsScreen',settings:'settingsScreen',achievements:'achievementsScreen',gameOver:'gameOverScreen',leaderboard:'leaderboardScreen',missions:'missionsScreen',profile:'profileScreen',modes:'modesScreen'};
+let currentScreen='menu';
+
+function showScreen(name){
+  Object.values(screens).forEach(id=>document.getElementById(id).classList.add('hidden'));
+  if(name&&screens[name])document.getElementById(screens[name]).classList.remove('hidden');
+  currentScreen=name||null;
+}
+
+// ==================== SKINS SCREEN ====================
+function renderSkins(){
+  const grid=document.getElementById('skinsGrid');grid.innerHTML='';
+  for(const skin of SKINS){
+    const slot=document.createElement('div');
+    const owned=unlockedSkins.has(skin.id);
+    slot.className='skin-slot'+(skin.id===selectedSkin?' selected':'')+(owned?'':' locked');
+    slot.innerHTML=`<span>${skin.icon}</span>${!owned&&skin.price>0?`<span class="skin-price">${skin.price}💰</span>`:''}`;
+    slot.onclick=()=>{
+      if(owned){
+        selectedSkin=skin.id;saveSkin();renderSkins();
+      } else if(skin.price>0){
+        buySkin(skin.id);
+      }
+      renderSkinPreview(skin);
+    };
+    grid.appendChild(slot);
+  }
+  renderSkinPreview(getSkin());
+}
+
+function renderSkinPreview(skin){
+  document.getElementById('skinName').textContent=skin.name;
+  document.getElementById('skinDesc').textContent=skin.desc;
+  const ue=document.getElementById('skinUnlock');
+  if(unlockedSkins.has(skin.id)){
+    ue.textContent='✅ Đã sở hữu';ue.style.color='#00ff96';
+  } else if(skin.price>0){
+    ue.innerHTML=`💰 ${skin.price} coin <button onclick="buySkin('${skin.id}')" style="background:#ff96c8;color:white;border:none;padding:4px 12px;border-radius:8px;margin-left:8px;cursor:pointer;font-size:12px;">Mua</button>`;
+    ue.style.color='#fbbf24';
+  } else if(skin.unlock){
+    const lbls={score:`Đạt ${skin.unlock.value} điểm`,pipes:`Qua ${skin.unlock.value} ống`,totalGames:`Chơi ${skin.unlock.value} lần`,combo:`Combo x${skin.unlock.value}`,powerups:`Nhặt ${skin.unlock.value} power-up`,dodged:`${skin.unlock.value} ống né được`};
+    ue.textContent=`🔒 ${lbls[skin.unlock.type]||''}`;ue.style.color='#ffcc00';
+  }
+  // draw preview
+  const pc=document.getElementById('skinPreviewCanvas'),px=pc.getContext('2d');
+  px.clearRect(0,0,48,48);
+  const sz=14,now=performance.now();
+  const sc=c=>{if(c==='rainbow')return`hsl(${(now*0.1)%360},80%,65%)`;return c;};
+  px.save();px.translate(24,28);
+  px.fillStyle=sc(skin.body);px.beginPath();px.ellipse(0,0,sz*0.55,sz*0.45,0,0,Math.PI*2);px.fill();
+  px.fillStyle=sc(skin.head);px.beginPath();px.arc(sz*0.25,-sz*0.18,sz*0.32,0,Math.PI*2);px.fill();
+  px.fillStyle=sc(skin.ear);
+  [[0.08,-0.42,0.03,-0.7,0.25,-0.46],[0.32,-0.42,0.42,-0.7,0.48,-0.42]].forEach(e=>{px.beginPath();px.moveTo(sz*e[0],sz*e[1]);px.lineTo(sz*e[2],sz*e[3]);px.lineTo(sz*e[4],sz*e[5]);px.fill();});
+  px.fillStyle=sc(skin.inner);
+  [[0.1,-0.44,0.08,-0.62,0.23,-0.47],[0.34,-0.44,0.41,-0.62,0.46,-0.44]].forEach(e=>{px.beginPath();px.moveTo(sz*e[0],sz*e[1]);px.lineTo(sz*e[2],sz*e[3]);px.lineTo(sz*e[4],sz*e[5]);px.fill();});
+  px.fillStyle=skin.eye;[0.17,0.35].forEach(ex=>{px.beginPath();px.ellipse(sz*ex,-sz*0.22,3,4,0,0,Math.PI*2);px.fill();});
+  px.fillStyle='white';[0.19,0.37].forEach(ex=>{px.beginPath();px.arc(sz*ex,-sz*0.25,1.5,0,Math.PI*2);px.fill();});
+  px.fillStyle=sc(skin.nose);px.beginPath();px.arc(sz*0.26,-sz*0.1,2.5,0,Math.PI*2);px.fill();
+  px.strokeStyle=sc(skin.body);px.lineWidth=3;px.lineCap='round';
+  px.beginPath();px.moveTo(-sz*0.45,0);px.quadraticCurveTo(-sz*0.7,-sz*0.3,-sz*0.6,-sz*0.55);px.stroke();
+  px.restore();
+}
+
+// ==================== ACHIEVEMENTS SCREEN ====================
+let prevUnlocked = new Set();
+function checkNewAchievements(){
+  const newlyUnlocked = [];
+  for(const a of ACHIEVEMENTS){
+    if(a.check(stats) && !prevUnlocked.has(a.id)){
+      prevUnlocked.add(a.id);
+      newlyUnlocked.push(a);
+    }
+  }
+  return newlyUnlocked;
+}
+function initPrevUnlocked(){
+  for(const a of ACHIEVEMENTS){
+    if(a.check(stats)) prevUnlocked.add(a.id);
+  }
+}
+function renderAchievements(){
+  const list=document.getElementById('achievementsList');list.innerHTML='';
+  for(const a of ACHIEVEMENTS){
+    const ok=a.check(stats);
+    const item=document.createElement('div');
+    item.className='achievement-item'+(ok?' unlocked':'');
+    item.innerHTML=`<div class="achievement-icon">${a.icon}</div><div class="achievement-info"><div class="achievement-name">${a.name}</div><div class="achievement-desc">${a.desc}</div></div>${ok?'<div class="achievement-check">✓</div>':''}`;
+    list.appendChild(item);
+  }
+}
+
+// ==================== SETTINGS ====================
+function loadSettings(){
+  try{
+    const s=JSON.parse(localStorage.getItem('fc_settings')||'{}');
+    if(s.sfx!==undefined){document.getElementById('sfxToggle').checked=s.sfx;sfxEnabled=s.sfx;}
+    if(s.music!==undefined){document.getElementById('musicToggle').checked=s.music;musicEnabled=s.music;}
+    if(s.volume!==undefined){document.getElementById('volumeSlider').value=s.volume;volume=s.volume/100;}
+    if(s.vibrate!==undefined)document.getElementById('vibrateToggle').checked=s.vibrate;
+    if(s.track&&TRACKS[s.track]){selectedTrack=s.track;}
+  }catch{}
+}
+function saveSettings(){
+  localStorage.setItem('fc_settings',JSON.stringify({
+    sfx:document.getElementById('sfxToggle').checked,
+    music:document.getElementById('musicToggle').checked,
+    volume:document.getElementById('volumeSlider').value,
+    vibrate:document.getElementById('vibrateToggle').checked,
+    track:selectedTrack,
+  }));
+}
+
+function renderMusicList(){
+  const list=document.getElementById('musicList');
+  if(!list)return;
+  list.innerHTML='';
+  for(const[id,track]of Object.entries(TRACKS)){
+    const item=document.createElement('div');
+    item.className='music-item'+(id===selectedTrack?' selected':'');
+    item.innerHTML=`
+      <div class="music-icon">${track.icon}</div>
+      <div class="music-name">${track.name}</div>
+      <button class="music-preview-btn" data-track="${id}">▶</button>
+    `;
+    item.querySelector('.music-preview-btn').onclick=(e)=>{
+      e.stopPropagation();
+      previewTrack(id);
+    };
+    item.onclick=()=>{
+      selectedTrack=id;
+      saveSettings();
+      renderMusicList();
+      // Restart music with new track
+      stopMusic();
+      if(musicEnabled)startMusic();
+    };
+    list.appendChild(item);
+  }
+}
+
+// ==================== DAILY CHALLENGE ====================
+function getDailySeed(){
+  const d=new Date();
+  return d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
+}
+function seededRandom(seed){
+  let s=seed;
+  return function(){
+    s=(s*16807)%2147483647;
+    return(s-1)/2147483646;
+  };
+}
+let isDailyMode=false;
+let currentMode='classic';
+const MODES={
+  classic:{name:'Classic',unlock:0,coinMul:1,speedMul:1,gapMul:1,sizeMul:1},
+  hard:{name:'Hard Mode',unlock:5,coinMul:2,speedMul:1.5,gapMul:0.8,sizeMul:1},
+  speed:{name:'Speed Run',unlock:10,coinMul:3,speedMul:2,gapMul:0.85,sizeMul:1},
+  tiny:{name:'Tiny Cat',unlock:3,coinMul:1.5,speedMul:1,gapMul:1.1,sizeMul:0.6},
+  night:{name:'Night Mode',unlock:8,coinMul:2,speedMul:1.2,gapMul:0.9,sizeMul:1},
+};
+function startDailyChallenge(){
+  isDailyMode=true;
+  if(menuAnimFrame){cancelAnimationFrame(menuAnimFrame);menuAnimFrame=null;}
+  initGame();
+  // Pre-generate pipes with seeded random
+  const rng=seededRandom(getDailySeed());
+  const gap=getGap();
+  const minT=70,maxT=canvas.height-gap-70;
+  for(let i=0;i<200;i++){
+    const topH=minT+rng()*(maxT-minT);
+    pipes.push({x:canvas.width+i*getInterval()*getSpeed()/1000,topH,scored:false});
+  }
+  state='playing';
+  updateScoreUI();updateComboUI();updatePUBar();
+  startMusic();
+  if(animFrame)cancelAnimationFrame(animFrame);
+  gameLoop();
+}
+
+// ==================== SHARE SCORE ====================
+function shareScore(){
+  const text=`🐱 Flappy Cat\n🏆 Điểm: ${score}\n🔥 Best: ${stats.bestScore}\n💰 Coins: ${stats.coins}\n\nChơi thử tại: ${location.href}`;
+  if(navigator.share){
+    navigator.share({title:'Flappy Cat',text:text}).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(text).then(()=>showToast('📋','Đã copy!','Copy điểm vào clipboard',2000)).catch(()=>{
+      showToast('❌','Lỗi','Không thể copy',2000);
+    });
+  }
+}
+
+// ==================== SKIN PURCHASE ====================
+function buySkin(skinId){
+  const skin=SKINS.find(s=>s.id===skinId);
+  if(!skin||unlockedSkins.has(skin.id))return;
+  if(stats.coins>=skin.price){
+    stats.coins-=skin.price;
+    unlockedSkins.add(skin.id);
+    saveUnlocked();saveStats();
+    document.getElementById('menuCoins').textContent=`💰 ${stats.coins}`;
+    showToast('🎉','Mua thành công!',skin.icon+' '+skin.name,3000);
+    renderSkins();
+  } else {
+    showToast('❌','Không đủ coin!',`Cần ${skin.price}💰, bạn có ${stats.coins}💰`,3000);
+  }
+}
+
+// ==================== BUTTON WIRING ====================
+document.getElementById('btnShare').onclick=()=>shareScore();
+document.getElementById('btnPlay').onclick=()=>{
+  isDailyMode=false;initAudio();showScreen(null);document.getElementById('hud').classList.remove('hidden');startGame();
+};
+document.getElementById('btnDaily').onclick=()=>{
+  isDailyMode=true;initAudio();showScreen(null);document.getElementById('hud').classList.remove('hidden');startDailyChallenge();
+};
+document.getElementById('btnSkins').onclick=()=>{showScreen('skins');renderSkins();};
+document.getElementById('btnLeaderboard').onclick=()=>{showScreen('leaderboard');renderLeaderboard('all');};
+document.getElementById('btnMissions').onclick=()=>{showScreen('missions');renderMissions();};
+document.getElementById('btnProfile').onclick=()=>{showScreen('profile');renderProfile();};
+document.getElementById('btnModes').onclick=()=>{showScreen('modes');renderModes();};
+document.getElementById('btnSettings').onclick=()=>{showScreen('settings');renderMusicList();};
+document.getElementById('btnAchievements').onclick=()=>{showScreen('achievements');renderAchievements();};
+document.getElementById('btnRestart').onclick=()=>{isDailyMode=false;showScreen(null);document.getElementById('hud').classList.remove('hidden');startGame();};
+document.getElementById('btnBackToMenu').onclick=()=>{if(animFrame)cancelAnimationFrame(animFrame);stopMusic();document.getElementById('menuHighscore').textContent=`Best: ${stats.bestScore}`;document.getElementById('menuCoins').textContent=`💰 ${stats.coins}`;if(stats.dailyStreak>1)document.getElementById('menuStreak').textContent=`🔥 Streak: ${stats.dailyStreak} ngày liên tiếp`;else document.getElementById('menuStreak').textContent='';isDailyMode=false;showScreen('menu');if(!menuAnimFrame)menuLoop();};
+document.getElementById('btnSkinsBack').onclick=()=>showScreen('menu');
+document.getElementById('btnSettingsBack').onclick=()=>showScreen('menu');
+document.getElementById('btnAchievementsBack').onclick=()=>showScreen('menu');
+document.getElementById('btnLeaderboardBack').onclick=()=>showScreen('menu');
+document.getElementById('btnMissionsBack').onclick=()=>showScreen('menu');
+document.getElementById('btnProfileBack').onclick=()=>showScreen('menu');
+document.getElementById('btnModesBack').onclick=()=>showScreen('menu');
+
+// Leaderboard tabs
+document.querySelectorAll('.lb-tab').forEach(tab=>{
+  tab.onclick=()=>{
+    document.querySelectorAll('.lb-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    renderLeaderboard(tab.dataset.tab);
+  };
+});
+
+// settings listeners
+document.getElementById('sfxToggle').onchange=function(){sfxEnabled=this.checked;saveSettings();};
+document.getElementById('musicToggle').onchange=function(){musicEnabled=this.checked;if(!musicEnabled)stopMusic();saveSettings();};
+document.getElementById('volumeSlider').oninput=function(){volume=this.value/100;if(masterGain)masterGain.gain.value=volume;saveSettings();};
+document.getElementById('vibrateToggle').onchange=saveSettings;
+
+// ==================== GAME START ====================
+function startGame(){
+  if(menuAnimFrame){cancelAnimationFrame(menuAnimFrame);menuAnimFrame=null;}
+  initGame();state='playing';
+  updateScoreUI();updateComboUI();updatePUBar();
+  startMusic();
+  if(animFrame)cancelAnimationFrame(animFrame);
+  gameLoop();
+}
+
+// ==================== INPUT ====================
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'||e.code==='ArrowUp'){
+    e.preventDefault();
+    if(state==='playing'){cat.vy=JUMP;playSound('flap');spawnP(cat.x-10,cat.y+10,'rgba(255,255,255,0.5)',3);}
+    else if(currentScreen==='gameOver'){showScreen(null);document.getElementById('hud').classList.remove('hidden');startGame();}
+    else if(currentScreen==='menu')document.getElementById('btnPlay').click();
+  }
+});
+
+canvas.addEventListener('pointerdown',e=>{
+  if(state==='playing'&&currentScreen===null){
+    e.preventDefault();cat.vy=JUMP;playSound('flap');spawnP(cat.x-10,cat.y+10,'rgba(255,255,255,0.5)',3);
+  }
+});
+
+// ==================== MENU BACKGROUND ====================
+let menuAnimFrame=null;
+function menuLoop(){
+  if(currentScreen==='menu'){
+    drawBg(getTheme());drawGround();
+  }
+  menuAnimFrame=requestAnimationFrame(menuLoop);
+}
+
+// ==================== INIT ====================
+loadSkins();loadStats();loadSettings();initPrevUnlocked();
+document.getElementById('menuHighscore').textContent=`Best: ${stats.bestScore}`;
+document.getElementById('menuCoins').textContent=`💰 ${stats.coins}`;
+if(stats.dailyStreak>1)document.getElementById('menuStreak').textContent=`🔥 Streak: ${stats.dailyStreak} ngày liên tiếp`;
+else document.getElementById('menuStreak').textContent='';
+// Check login reward
+const loginReward=checkLoginReward();
+if(loginReward)setTimeout(()=>showLoginReward(loginReward),500);
+showScreen('menu');
+menuLoop();
+
+})();
+</script>
+</body>
+</html>
