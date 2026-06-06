@@ -1665,7 +1665,7 @@ menuLoop();
     if (active) return; active = true;
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
-    camera.position.set(0, 0.15, 5.2);
+    camera.position.set(0, 0.15, 7.0);
     renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
     renderer.setSize(400, 400);
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -1686,7 +1686,7 @@ menuLoop();
     bottom.position.set(0, -2, 3); scene.add(bottom);
 
     catGroup = new THREE.Group();
-    catGroup.scale.set(0.72, 0.72, 0.72);
+    catGroup.scale.set(0.5, 0.5, 0.5);
     scene.add(catGroup);
 
     const furTex = makeFur('#F09020','#C06808',512);
@@ -1707,8 +1707,8 @@ menuLoop();
 
     // Belly/face area (lighter, like the reference)
     const faceArea = new THREE.Mesh(new THREE.SphereGeometry(1.13, 48, 48), belly);
-    faceArea.scale.set(0.85, 0.75, 0.6);
-    faceArea.position.set(0, -0.15, 0.55);
+    faceArea.scale.set(0.75, 0.65, 0.45);
+    faceArea.position.set(0, -0.15, 0.35);
     catGroup.add(faceArea);
 
     // ===== EARS - ROUNDED (not pointed!) =====
