@@ -1271,10 +1271,12 @@ function startDailyChallenge(){
   // Pre-generate pipes with seeded random
   const rng=seededRandom(getDailySeed());
   const gap=getGap();
+  const pw=pipeW();
+  const spacing=pw*4; // pipes spaced 4x pipe width apart
   const minT=70,maxT=canvas.height-gap-70;
   for(let i=0;i<200;i++){
     const topH=minT+rng()*(maxT-minT);
-    pipes.push({x:canvas.width+i*getInterval()*getSpeed()/60,topH,scored:false});
+    pipes.push({x:canvas.width+i*spacing,topH,scored:false});
   }
   state='playing';
   updateScoreUI();updateComboUI();updatePUBar();
