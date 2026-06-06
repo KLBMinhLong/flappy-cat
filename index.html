@@ -536,7 +536,7 @@ function initGame(){
 }
 
 // ==================== DIFFICULTY ====================
-function getGap(){return Math.max(canvas.width*0.25,canvas.width*0.39-difficulty*3)*MODES[currentMode].gapMul;}
+function getGap(){if(dailyGap!==null)return dailyGap;return Math.max(canvas.width*0.25,canvas.width*0.39-difficulty*3)*MODES[currentMode].gapMul;}
 function getSpeed(){return(2.5+difficulty*0.15)*MODES[currentMode].speedMul;}
 function getInterval(){return Math.max(1000,1600-difficulty*40)/MODES[currentMode].speedMul;}
 function getTheme(){
@@ -658,6 +658,7 @@ function addFloat(x,y,text,color){floatTexts.push({x,y,text,color,life:1,vy:-2})
 
 // ==================== GAME LOGIC ====================
 let lastUpdateTime=performance.now();
+let dailyGap=null; // locked gap for daily challenge
 function updateGame(){
   if(state!=='playing')return;
   const now=performance.now();
@@ -1268,14 +1269,21 @@ function startDailyChallenge(){
   isDailyMode=true;
   if(menuAnimFrame){cancelAnimationFrame(menuAnimFrame);menuAnimFrame=null;}
   initGame();
+  // Lock gap size so it doesn't shrink as difficulty increases
+  dailyGap=getGap();
+  // Ensure canvas has valid dimensions
+  if(canvas.width<100||canvas.height<100){
+    canvas.width=window.innerWidth;
+    canvas.height=window.innerHeight;
+  }
   // Pre-generate pipes with seeded random
   const rng=seededRandom(getDailySeed());
-  const gap=getGap();
   const pw=pipeW();
-  const spacing=pw*4; // pipes spaced 4x pipe width apart
-  const minT=70,maxT=canvas.height-gap-70;
+  // Ensure spacing is always larger than pipe width with generous room
+  const spacing=Math.max(pw*6, canvas.width*0.6);
+  const minT=70,maxT=canvas.height-dailyGap-70;
   let prevTopH=minT+(maxT-minT)*0.5; // start in middle
-  const maxChange=canvas.height*0.12; // max 12% screen height change per pipe
+  const maxChange=canvas.height*0.06; // max 6% screen height change per pipe
   for(let i=0;i<200;i++){
     const newMin=Math.max(minT,prevTopH-maxChange);
     const newMax=Math.min(maxT,prevTopH+maxChange);
@@ -1321,7 +1329,7 @@ function buySkin(skinId){
 // ==================== BUTTON WIRING ====================
 document.getElementById('btnShare').onclick=()=>shareScore();
 document.getElementById('btnPlay').onclick=()=>{
-  isDailyMode=false;initAudio();showScreen(null);document.getElementById('hud').classList.remove('hidden');startGame();
+  isDailyMode=false;dailyGap=null;initAudio();showScreen(null);document.getElementById('hud').classList.remove('hidden');startGame();
 };
 document.getElementById('btnDaily').onclick=()=>{
   isDailyMode=true;initAudio();showScreen(null);document.getElementById('hud').classList.remove('hidden');startDailyChallenge();
@@ -1333,8 +1341,8 @@ document.getElementById('btnProfile').onclick=()=>{showScreen('profile');renderP
 document.getElementById('btnModes').onclick=()=>{showScreen('modes');renderModes();};
 document.getElementById('btnSettings').onclick=()=>{showScreen('settings');renderMusicList();};
 document.getElementById('btnAchievements').onclick=()=>{showScreen('achievements');renderAchievements();};
-document.getElementById('btnRestart').onclick=()=>{isDailyMode=false;showScreen(null);document.getElementById('hud').classList.remove('hidden');startGame();};
-document.getElementById('btnBackToMenu').onclick=()=>{if(animFrame)cancelAnimationFrame(animFrame);stopMusic();document.getElementById('menuHighscore').textContent=`Best: ${stats.bestScore}`;document.getElementById('menuCoins').textContent=`💰 ${stats.coins}`;if(stats.dailyStreak>1)document.getElementById('menuStreak').textContent=`🔥 Streak: ${stats.dailyStreak} ngày liên tiếp`;else document.getElementById('menuStreak').textContent='';isDailyMode=false;showScreen('menu');if(!menuAnimFrame)menuLoop();};
+document.getElementById('btnRestart').onclick=()=>{isDailyMode=false;dailyGap=null;showScreen(null);document.getElementById('hud').classList.remove('hidden');startGame();};
+document.getElementById('btnBackToMenu').onclick=()=>{if(animFrame)cancelAnimationFrame(animFrame);stopMusic();document.getElementById('menuHighscore').textContent=`Best: ${stats.bestScore}`;document.getElementById('menuCoins').textContent=`💰 ${stats.coins}`;if(stats.dailyStreak>1)document.getElementById('menuStreak').textContent=`🔥 Streak: ${stats.dailyStreak} ngày liên tiếp`;else document.getElementById('menuStreak').textContent='';isDailyMode=false;dailyGap=null;showScreen('menu');if(!menuAnimFrame)menuLoop();};
 document.getElementById('btnSkinsBack').onclick=()=>showScreen('menu');
 document.getElementById('btnSettingsBack').onclick=()=>showScreen('menu');
 document.getElementById('btnAchievementsBack').onclick=()=>showScreen('menu');
